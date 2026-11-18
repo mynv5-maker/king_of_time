@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bấm giờ task</title>
+<style>
+:root{
+  --bg:#E9EEF2; --surface:#FFFFFF; --surface-2:#F4F7F9; --ink:#15202B; --muted:#5A6877; --line:#D2DAE2;
+  --run:#0E7468; --run-soft:#D6EFEA; --ot:#5A3EA4; --ot-soft:#E8E2F7;
+  --warn:#9A5604; --warn-soft:#FBEBD2; --danger:#B42318; --danger-soft:#FBE1DD;
+  --focus:#1D5FD6; --idle:#8C99A6; --shadow:0 1px 2px rgba(21,32,43,.06),0 6px 24px rgba(21,32,43,.07);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11171D; --surface:#19212A; --surface-2:#1F2933; --ink:#E6EDF3; --muted:#9AA8B6; --line:#2E3A46;
+    --run:#3CC2AE; --run-soft:#173A36; --ot:#A991F0; --ot-soft:#2C2545;
+    --warn:#F0B45A; --warn-soft:#3A2C14; --danger:#F07A6C; --danger-soft:#3F1E1A;
+    --focus:#6EA0FF; --idle:#6B7886; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 24px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11171D; --surface:#19212A; --surface-2:#1F2933; --ink:#E6EDF3; --muted:#9AA8B6; --line:#2E3A46;
+  --run:#3CC2AE; --run-soft:#173A36; --ot:#A991F0; --ot-soft:#2C2545;
+  --warn:#F0B45A; --warn-soft:#3A2C14; --danger:#F07A6C; --danger-soft:#3F1E1A;
+  --focus:#6EA0FF; --idle:#6B7886; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 24px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:"Segoe UI","Yu Gothic UI","Meiryo UI","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer;text-align:center}
+.btn:hover{border-color:var(--muted)}
+.btn.big{min-height:58px;font-size:17px;padding:0 22px}
+.btn.primary{background:var(--run);border-color:var(--run);color:#fff}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.danger-ghost{color:var(--danger);border-color:var(--danger-soft)}
+.btn.ot{background:var(--ot);border-color:var(--ot);color:#fff}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.link{background:none;border:0;padding:0;color:var(--focus);text-decoration:underline;cursor:pointer;font-weight:600}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:10px 20px;flex-wrap:wrap}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--surface)}
+.brand{font-weight:700;font-size:17px;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.brand-mark{width:28px;height:28px;border-radius:8px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:15px}
+.tabs{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:12px}
+.tabs button{border:0;background:transparent;min-height:38px;padding:0 16px;border-radius:9px;font-weight:600;cursor:pointer;color:var(--muted)}
+.tabs button[aria-current="page"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.top .spacer{flex:1}
+.clock{display:flex;align-items:baseline;gap:6px;font-weight:700;font-size:20px}
+.clock small{font-size:12px;color:var(--muted);font-weight:600}
+.me{display:flex;align-items:center;gap:10px}
+.me-name{font-weight:600}
+
+/* banners */
+#banners{display:flex;flex-direction:column;gap:8px;padding:12px 20px 0;max-width:1400px;margin:0 auto}
+#banners:empty{display:none}
+.banner{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;background:var(--warn-soft);color:var(--ink);border-left:6px solid var(--warn);flex-wrap:wrap}
+.banner.ot{background:var(--ot-soft);border-color:var(--ot)}
+.banner.danger{background:var(--danger-soft);border-color:var(--danger)}
+.banner.info{background:var(--surface);border-color:var(--idle)}
+.banner p{margin:0;flex:1;min-width:220px}
+
+/* layout */
+.wrap{max-width:1400px;margin:0 auto;padding:16px 20px 60px}
+.main-grid{display:grid;grid-template-columns:minmax(330px,420px) 1fr;gap:20px;align-items:start}
+@media (max-width:900px){.main-grid{grid-template-columns:1fr}}
+.main-grid > *{min-width:0}
+.left-col{display:flex;flex-direction:column;gap:16px;position:sticky;top:76px}
+@media (max-width:900px){.left-col{position:static}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.panel h3{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:10px}
+.panel h3 .hint{font-weight:400;color:var(--muted);font-size:13px}
+
+/* running card */
+.run{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 20px 18px 28px;box-shadow:var(--shadow);overflow:hidden}
+.run::before{content:"";position:absolute;left:0;top:0;bottom:0;width:10px;background:var(--idle)}
+.run.is-running::before{background:var(--run)}
+.run.is-ot::before{background:var(--ot)}
+.run-state{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--idle)}
+.is-running .dot{background:var(--run);animation:pulse 1.6s ease-in-out infinite}
+.is-ot .dot{background:var(--ot)}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.is-running .dot{animation:none}}
+.tag{display:inline-flex;align-items:center;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--muted)}
+.tag.ot{background:var(--ot);color:#fff}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.danger{background:var(--danger-soft);color:var(--danger)}
+.tag.ok{background:var(--run-soft);color:var(--run)}
+.run-task{margin:10px 0 2px;font-size:21px;line-height:1.3;font-weight:700;word-break:break-word}
+.run-path{color:var(--muted);font-size:13px}
+.run-time{font-size:68px;font-weight:700;line-height:1;letter-spacing:-2px;margin:14px 0 6px}
+.run-time small{font-size:28px;letter-spacing:0;color:var(--muted);margin-left:2px}
+.is-running .run-time{color:var(--run)}
+.is-ot .run-time{color:var(--ot)}
+.run-meta{color:var(--muted);font-size:14px;display:flex;gap:14px;flex-wrap:wrap}
+.run-empty{font-size:17px;margin:10px 0 4px;font-weight:600}
+.fields{display:grid;grid-template-columns:120px 1fr;gap:10px;margin-top:16px}
+.field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.field input,.field select,.field textarea{min-width:0;width:100%;min-height:42px;border:1.5px solid var(--line);border-radius:9px;background:var(--surface);padding:0 10px;font-size:15px;font-weight:400;color:var(--ink)}
+.field textarea{padding:8px 10px;min-height:70px;resize:vertical}
+.run-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.btn.check{border-color:var(--run);color:var(--run);background:var(--surface)}
+.field input.need{border-color:var(--danger);background:var(--danger-soft);outline:2px solid var(--danger);outline-offset:1px}
+.field .req{color:var(--danger)}
+.need-msg{grid-column:1/-1;color:var(--danger);font-weight:600;font-size:13px;margin-top:-4px}
+.btn.check:hover{background:var(--run-soft)}
+.btn.resume{background:var(--run);border-color:var(--run);color:#fff}
+.paused-task{margin:10px 0 2px;font-size:19px;font-weight:700;line-height:1.3;word-break:break-word}
+.prev-label{font-size:12px;color:var(--muted);margin-top:14px;font-weight:600}
+
+/* timeline */
+.tl{position:relative;height:38px;background:var(--surface-2);border-radius:8px;overflow:hidden}
+.tl-work{position:absolute;top:0;bottom:0;background:var(--surface);border-left:1px dashed var(--line);border-right:1px dashed var(--line)}
+.tl-seg{position:absolute;top:7px;bottom:7px;border-radius:4px;background:var(--run);min-width:2px}
+.tl-seg.ot{background:var(--ot)}
+.tl-seg.open{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 6px,transparent 6px 12px)}
+.tl-now{position:absolute;top:0;bottom:0;width:2px;background:var(--danger)}
+.tl-axis{position:relative;height:18px;font-size:11px;color:var(--muted)}
+.tl-axis span{position:absolute;transform:translateX(-50%);top:2px}
+.tl-legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.tl-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--run)}
+.tl-legend i.ot{background:var(--ot)}
+
+/* quick tasks */
+.quick{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.qbtn{position:relative;min-height:88px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+.qbtn:hover{border-color:var(--run)}
+.qbtn .qn{font-weight:700;font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.qbtn .qs{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qbtn.on{background:var(--run-soft);border-color:var(--run)}
+.qbtn.on.is-ot{background:var(--ot-soft);border-color:var(--ot)}
+.qbtn .pin{position:absolute;top:8px;right:10px;color:var(--warn);font-size:13px}
+.empty{color:var(--muted);padding:14px;border:1.5px dashed var(--line);border-radius:12px;text-align:center}
+
+/* all tasks */
+.search{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.search input{flex:1;min-width:220px;min-height:46px;border:1.5px solid var(--line);border-radius:10px;padding:0 14px;background:var(--surface);font-size:16px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;min-height:34px;padding:0 12px;font-size:13px;font-weight:600;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tlist{max-height:62vh;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.tgroup{position:sticky;top:0;background:var(--surface-2);font-size:12px;font-weight:700;color:var(--muted);padding:6px 14px;border-bottom:1px solid var(--line);z-index:1}
+.trow{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+.trow:last-child{border-bottom:0}
+.tpick{flex:1;text-align:left;background:transparent;border:0;padding:10px 14px;cursor:pointer;min-height:52px}
+.tpick:hover{background:var(--surface-2)}
+.tpick b{display:block;font-weight:600}
+.tpick small{color:var(--muted);font-size:12px}
+.trow.on .tpick{background:var(--run-soft)}
+.star{width:52px;border:0;border-left:1px solid var(--line);background:transparent;cursor:pointer;font-size:20px;color:var(--idle)}
+.star[aria-pressed="true"]{color:var(--warn)}
+
+/* names */
+.names{max-width:1100px;margin:0 auto;padding:36px 20px 60px}
+.names-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.names h1{font-size:30px;margin:0 0 4px;letter-spacing:-.5px}
+.names p.sub{margin:0;color:var(--muted)}
+.big-clock{font-size:44px;font-weight:700;line-height:1;letter-spacing:-1px;text-align:right}
+.big-clock small{display:block;font-size:13px;color:var(--muted);font-weight:600;letter-spacing:0;margin-top:6px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:14px}
+.mbtn{min-height:82px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);text-align:left;padding:12px 16px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.mbtn:hover{border-color:var(--ink)}
+.mbtn b{font-size:20px;line-height:1.2}
+.mbtn small{color:var(--muted);font-size:13px}
+.mbtn .flag{font-size:12px;font-weight:700;color:var(--warn);margin-top:4px}
+.mbtn .flag.run{color:var(--run)}
+.admin{margin-top:28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;border:1.5px dashed var(--line);border-radius:14px}
+.admin-info{flex:1;min-width:240px;display:flex;flex-direction:column;font-size:13px;color:var(--muted)}
+.admin-info b{color:var(--ink);font-size:14px}
+.preview-list{margin:4px 0 10px;padding-left:20px;font-size:14px;max-height:160px;overflow:auto}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin:8px 0 12px}
+.kv b{font-variant-numeric:tabular-nums}
+.foot{margin-top:18px;color:var(--muted);font-size:12px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.foot .ver{cursor:default;user-select:none}
+
+/* today */
+.today-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.today-head select{min-height:46px;border:1.5px solid var(--line);border-radius:10px;padding:0 12px;background:var(--surface);font-size:16px;font-weight:600}
+.stats{display:flex;gap:22px;flex-wrap:wrap}
+.stat b{display:block;font-size:24px;line-height:1.1}
+.stat span{font-size:12px;color:var(--muted);font-weight:600}
+.actions-row{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:1080px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle;font-size:14px}
+th{background:var(--surface-2);font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right}
+td input{width:100%;min-height:38px;border:1.5px solid var(--line);border-radius:8px;padding:0 8px;background:var(--surface)}
+td input.qty{width:80px}
+td select.chk{min-height:38px;border:1.5px solid var(--line);border-radius:8px;padding:0 6px;background:var(--surface)}
+.flags{display:flex;gap:4px;flex-wrap:wrap}
+
+/* modal */
+#modal-root .scrim{position:fixed;inset:0;z-index:100;background:rgba(10,16,22,.55);display:grid;place-items:center;padding:16px;overflow:auto}
+.modal{width:min(560px,100%);background:var(--surface);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;border-top:8px solid var(--ink)}
+.modal.warn{border-top-color:var(--warn)}
+.modal.ot{border-top-color:var(--ot)}
+.modal.danger{border-top-color:var(--danger)}
+.modal.run{border-top-color:var(--run)}
+.modal-b{padding:20px 22px}
+.modal h2{margin:0 0 8px;font-size:22px;line-height:1.3}
+.modal p{margin:0 0 10px}
+.modal .muted{color:var(--muted);font-size:14px}
+.modal-a{display:flex;flex-direction:column;gap:8px;padding:0 22px 22px}
+.modal-a.row{flex-direction:row;flex-wrap:wrap;justify-content:flex-end}
+.modal-a .btn{min-height:52px;font-size:16px}
+.modal-a.row .btn{min-height:46px}
+.taskbox{background:var(--surface-2);border-radius:12px;padding:12px 14px;margin:10px 0}
+.taskbox > b{display:block;font-size:16px}
+.taskbox span{color:var(--muted);font-size:13px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.form-grid .full{grid-column:1/-1}
+.err{color:var(--danger);font-weight:600;font-size:14px;min-height:20px;margin-top:8px}
+.choice{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer}
+.steps{margin:10px 0 0;padding-left:20px}
+
+/* toast */
+#toast-root{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:600;box-shadow:var(--shadow);max-width:90vw}
+.toast.warn{background:var(--warn);color:#fff}
+.toast.danger{background:var(--danger);color:#fff}
+
+/* blocked */
+.blocked{max-width:560px;margin:12vh auto;padding:0 20px;text-align:center}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast-root" aria-live="polite"></div>
+<script>
+'use strict';
+/* =====================================================================
+   CẤU HÌNH – sửa các biến dưới đây cho phù hợp
+   ===================================================================== */
+
+// BẢN CÔNG KHAI: file này KHÔNG chứa thông tin nội bộ (danh sách member, task list, link SharePoint).
+// Các thông tin đó nằm trong file config (Template_Config.xlsx) lưu trên SharePoint của team.
+// PM/teamlead nạp file config vào tool bằng nút "Update_config" ở màn hình chọn tên (lưu trên trình duyệt của từng máy).
+// KHÔNG viết thông tin nội bộ / thông tin khách hàng vào file này.
+
+const WORK_START = "09:00";      // JST
+const WORK_END = "16:00";        // JST
+const WARN_MINUTES = 120;        // hỏi lại sau bao nhiêu phút chạy liên tục
+const REMIND_EXPORT = "15:45";   // JST: bắt đầu hiện banner nhắc xuất file
+
+// Tuỳ chọn thêm
+const WORK_DAYS = [1, 2, 3, 4, 5];  // 0=CN, 1=T2 ... 6=T7. Dùng để tô vùng giờ làm trên timeline và nhắc khi không chạy task
+const IDLE_REMIND_MINUTES = 15;     // trong giờ làm, không chạy task nào quá X phút thì hiện banner nhắc (không âm báo)
+const HEARTBEAT_SECONDS = 60;       // ghi nhận "còn hoạt động" mỗi X giây
+const STALE_MINUTES = 3;            // mở lại tool: heartbeat cũ hơn X phút => coi như tool đã bị đóng
+const SLEEP_GAP_MINUTES = 5;        // tool đang mở nhưng mất heartbeat quá X phút (máy ngủ) => xử lý như tool bị đóng
+const KEEP_DAYS = 30;               // tự xoá dữ liệu cũ hơn X ngày
+const QUICK_TASK_COUNT = 12;        // số nút trong "Task của tôi"
+const PROMPT_RESOUND_MINUTES = 5;   // popup chưa được trả lời: phát lại âm báo mỗi X phút
+const ADMIN_PIN = "";               // mã PIN cho nút "Update_config" (để trống = không cần PIN). Lưu ý: bản công khai thì ai xem code cũng thấy PIN này
+
+/* =====================================================================
+   HẾT PHẦN CẤU HÌNH
+   ===================================================================== */
+
+const APP_VERSION = '2.1';
+const TZ = 9 * 3600000, MIN = 60000, DAY = 86400000;
+
+/* ---------- Thời gian (luôn theo JST, không phụ thuộc múi giờ máy) ---------- */
+const now = () => Date.now();
+const pad = n => String(n).padStart(2, '0');
+function parts(ms) {
+  const d = new Date(ms + TZ);
+  return { y: d.getUTCFullYear(), mo: d.getUTCMonth() + 1, d: d.getUTCDate(), h: d.getUTCHours(), mi: d.getUTCMinutes(), s: d.getUTCSeconds() };
+}
+function dayKey(ms) { const p = parts(ms); return `${p.y}-${pad(p.mo)}-${pad(p.d)}`; }
+function at(dk, hmStr) {
+  const [y, m, d] = dk.split('-').map(Number); const [h, mi] = hmStr.split(':').map(Number);
+  return Date.UTC(y, m - 1, d, h, mi) - TZ;
+}
+function addDays(dk, n) { return dayKey(at(dk, '12:00') + n * DAY); }
+function hm(ms) { const p = parts(ms); return pad(p.h) + ':' + pad(p.mi); }
+function weekday(dk) { const [y, m, d] = dk.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)).getUTCDay(); }
+function isWorkday(dk) { return WORK_DAYS.includes(weekday(dk)); }
+function inWork(ms) { const k = dayKey(ms); return isWorkday(k) && ms >= at(k, WORK_START) && ms < at(k, WORK_END); }
+const WD = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+function fmtDay(dk) { const [y, m, d] = dk.split('-'); return `${WD[weekday(dk)]}, ${d}/${m}/${y}`; }
+function fmtDT(ms, refDay) { return (refDay && dayKey(ms) === refDay) ? hm(ms) : `${hm(ms)} (${dayKey(ms).slice(8)}/${dayKey(ms).slice(5, 7)})`; }
+function dur(ms) { const m = Math.max(0, Math.floor(ms / MIN)); return pad(Math.floor(m / 60)) + ':' + pad(m % 60); }
+function minutesOf(r, endOverride) {
+  const e = endOverride ?? r.end ?? now();
+  const total = Math.max(0, Math.round((e - r.start) / MIN));
+  return { total };
+}
+
+/* ---------- Lớp lưu trữ: localStorage, tự chuyển sang bộ nhớ tạm nếu không có ---------- */
+class Store {
+  constructor(prefix) {
+    this.p = prefix; this.mem = new Map(); this.ls = null; this.mode = 'memory';
+    try {
+      const ls = window.localStorage; const k = prefix + '__probe';
+      ls.setItem(k, '1'); ls.removeItem(k); this.ls = ls; this.mode = 'local';
+    } catch (e) { this.ls = null; }
+  }
+  get(k, def) {
+    let raw = null;
+    try { raw = this.ls ? this.ls.getItem(this.p + k) : (this.mem.has(k) ? this.mem.get(k) : null); } catch (e) { raw = null; }
+    if (raw == null) return def;
+    try { return JSON.parse(raw); } catch (e) { return def; }
+  }
+  set(k, v) {
+    const raw = JSON.stringify(v);
+    if (this.ls) {
+      try { this.ls.setItem(this.p + k, raw); return true; }
+      catch (e) { toast('Không lưu được dữ liệu – bộ nhớ trình duyệt có thể đã đầy', 'danger'); return false; }
+    }
+    this.mem.set(k, raw); return true;
+  }
+  del(k) { try { this.ls ? this.ls.removeItem(this.p + k) : this.mem.delete(k); } catch (e) {} }
+  clearAll() {
+    if (this.ls) {
+      const ks = []; for (let i = 0; i < this.ls.length; i++) { const k = this.ls.key(i); if (k && k.startsWith(this.p)) ks.push(k); }
+      ks.forEach(k => this.ls.removeItem(k));
+    } else this.mem.clear();
+  }
+}
+const store = new Store('btt.v1.');
+
+/* ---------- Danh mục ---------- */
+const isDash = s => !s || /^[\-－–—ー]$/.test(String(s).trim());
+function norm(s) { return String(s).normalize('NFKC').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd'); }
+// Danh sách đang dùng = danh sách đã cập nhật qua nút "Cập nhật member/task" (lưu trên máy) nếu có, nếu không thì dùng MEMBERS/TASKS ở trên
+let TASK_LIST = [], TASK_BY_KEY = new Map(), DEPTS = [], ALL_MEMBERS = [], MEMBER_LIST = [];
+function buildCatalog() {
+  const cm = store.get('cfg.members', null), ct = store.get('cfg.tasks', null);
+  const mrows = cm && Array.isArray(cm.rows) ? cm.rows : [];
+  const trows = ct && Array.isArray(ct.rows) ? ct.rows : [];
+  TASK_LIST = []; TASK_BY_KEY = new Map();
+  trows.forEach(row => {
+    const [dept, l1, l2, l3, dtms] = row.slice(0, 5).map(x => String(x ?? '').trim());
+    const name = isDash(l3) ? l2.replace(/^\d+_/, '') : l3;
+    const key = [dept, l1, l2, l3, dtms].join('|');
+    if (!name || TASK_BY_KEY.has(key)) return;
+    const t = { i: TASK_LIST.length, key, dept, l1, l2, l3, dtms, name, kind: String(row[5] ?? '').trim(), path: [l1, l2].filter(x => !isDash(x)).join(' › ') };
+    t.search = norm([name, dtms, l1, l2, dept].join(' '));
+    TASK_LIST.push(t); TASK_BY_KEY.set(key, t);
+  });
+  DEPTS = [...new Set(TASK_LIST.map(t => t.dept))];
+  ALL_MEMBERS = mrows.map(([name, acc, active]) => ({ name: String(name).trim(), acc: String(acc).trim(), given: String(name).trim().split(/\s+/).pop(), active: active !== false }));
+  ALL_MEMBERS.forEach(m => { m.short = ALL_MEMBERS.filter(x => x.given === m.given).length > 1 ? `${m.given} (${m.acc})` : m.given; });
+  MEMBER_LIST = ALL_MEMBERS.filter(m => m.active);
+}
+buildCatalog();
+const memberOf = acc => ALL_MEMBERS.find(m => m.acc === acc) || { name: acc, acc, given: acc, short: acc };
+
+/* ---------- Tiện ích ---------- */
+const $ = s => document.querySelector(s);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const trunc = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+function asciiName(s) { return String(s).replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]/g, ''); }
+function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function toast(msg, tone) {
+  const el = document.createElement('div'); el.className = 'toast ' + (tone || ''); el.textContent = msg;
+  const root = $('#toast-root'); root.appendChild(el); while (root.children.length > 2) root.firstChild.remove(); setTimeout(() => el.remove(), 3500);
+}
+
+/* ---------- Âm báo nhẹ (Web Audio, không cần file) ---------- */
+let audioCtx = null;
+function unlockAudio() { try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} }
+function chime() {
+  try {
+    unlockAudio(); if (!audioCtx) return;
+    const t0 = audioCtx.currentTime;
+    [[784, 0], [1047, 0.22], [784, 0.6], [1047, 0.82]].forEach(([f, d]) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + d); g.gain.exponentialRampToValueAtTime(0.12, t0 + d + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.35);
+      o.connect(g).connect(audioCtx.destination); o.start(t0 + d); o.stop(t0 + d + 0.4);
+    });
+  } catch (e) {}
+}
+
+/* ---------- Dữ liệu ---------- */
+let records = [];
+function loadRecords() { records = store.get('records', []); if (!Array.isArray(records)) records = []; }
+function saveRecords() { store.set('records', records); }
+function runningRec(acc = S.member) { return records.find(r => r.end == null && r.member === acc) || null; }
+function recsOf(acc, dk) { return records.filter(r => r.member === acc && r.date === dk).sort((a, b) => a.start - b.start); }
+function recHash(list) { return hashStr(JSON.stringify(list.map(r => [r.id, r.key, r.start, r.end, r.qty, r.note, !!r.unconfirmed, !!r.edited, r.check || 0, r.doneAt || 0]))); }
+function exportStatus(acc, dk) {
+  const list = recsOf(acc, dk); const st = ((store.get('exports', {}) || {})[acc] || {})[dk];
+  if (!list.length) return { state: 'empty', count: 0 };
+  if (!st) return { state: 'none', count: list.length };
+  return { state: st.hash === recHash(list) ? 'ok' : 'stale', at: st.at, count: list.length };
+}
+function markExported(acc, dk) {
+  const ex = store.get('exports', {}) || {}; ex[acc] = ex[acc] || {};
+  ex[acc][dk] = { at: now(), hash: recHash(recsOf(acc, dk)) }; store.set('exports', ex);
+}
+function purgeOld() {
+  const limit = dayKey(now() - KEEP_DAYS * DAY);
+  const before = records.length;
+  records = records.filter(r => r.end == null || r.date >= limit);
+  if (records.length !== before) saveRecords();
+  const ex = store.get('exports', {}) || {}; let ch = false;
+  Object.values(ex).forEach(m => Object.keys(m).forEach(d => { if (d < limit) { delete m[d]; ch = true; } }));
+  if (ch) store.set('exports', ex);
+}
+function favs() { return store.get('favs.' + S.member, []) || []; }
+function toggleFav(key) {
+  const f = favs(); const i = f.indexOf(key); if (i >= 0) f.splice(i, 1); else f.unshift(key);
+  store.set('favs.' + S.member, f);
+}
+function quickTasks() {
+  const f = favs().filter(k => TASK_BY_KEY.has(k));
+  const recent = records.filter(r => r.member === S.member).sort((a, b) => b.start - a.start).map(r => r.key);
+  const out = [...f];
+  for (const k of recent) { if (out.length >= Math.max(QUICK_TASK_COUNT, f.length)) break; if (!out.includes(k) && TASK_BY_KEY.has(k)) out.push(k); }
+  return out.map(k => ({ t: TASK_BY_KEY.get(k), fav: f.includes(k) }));
+}
+
+/* ---------- Trạng thái ---------- */
+const S = { member: null, screen: 'names', lastHB: 0, lastDay: null, idleSince: 0, blocked: false, viewDay: null, dept: 'all', query: '', nameQuery: '', prompt: null, promptSoundAt: 0, flip: false, lastBanners: '', lastTL: 0 };
+const REASON = {
+  closed: 'Tool bị đóng (tắt tab, tắt máy hoặc máy ngủ) khi task đang chạy. Giờ kết thúc đang tạm tính theo lần hoạt động cuối cùng.',
+  midnight: 'Task chạy qua 00:00 mà chưa dừng. Hãy nhập giờ kết thúc thực tế.',
+  switch: 'Task tự dừng vì một người khác đã chọn tên trên máy này.'
+};
+
+/* ---------- Modal ---------- */
+const modalStack = [];
+function openModal(o) { const m = Object.assign({ id: uid() }, o); modalStack.push(m); renderModal(); return m; }
+function closeModal(m) {
+  const i = modalStack.indexOf(m); if (i < 0) return;
+  modalStack.splice(i, 1); if (m === S.prompt) S.prompt = null; if (m.onClose) m.onClose(); renderModal();
+}
+function closeAllModals() { modalStack.length = 0; S.prompt = null; renderModal(); }
+function renderModal() {
+  const root = $('#modal-root'); const m = modalStack[modalStack.length - 1];
+  if (!m) { root.innerHTML = ''; root.dataset.mid = ''; return; }
+  if (root.dataset.mid === m.id) return;
+  root.dataset.mid = m.id;
+  root.innerHTML = `<div class="scrim"><div class="modal ${m.tone || ''}" role="dialog" aria-modal="true" aria-labelledby="mt-${m.id}">
+    <div class="modal-b"><h2 id="mt-${m.id}">${esc(m.title)}</h2>${m.body || ''}</div>
+    <div class="modal-a ${m.row ? 'row' : ''}">${(m.actions || []).map((a, i) => `<button class="btn ${a.cls || ''}" data-mi="${i}" ${a.hidden ? 'hidden' : ''}>${esc(a.label)}</button>`).join('')}</div>
+  </div></div>`;
+  root.querySelectorAll('[data-mi]').forEach(b => b.addEventListener('click', () => {
+    const a = m.actions[+b.dataset.mi]; const keep = a.onClick ? a.onClick(root, m) : undefined;
+    if (keep !== false) closeModal(m);
+  }));
+  if (m.onMount) m.onMount(root, m);
+  const f = root.querySelector('[autofocus]') || root.querySelector('.modal-a .btn');
+  if (f) setTimeout(() => f.focus(), 30);
+}
+
+/* Chọn giờ kết thúc (ngày + giờ, JST) */
+function pickEndTime(o) {
+  const rec = o.rec; const today = dayKey(now()); const days = [];
+  for (let k = rec.date, i = 0; i < 10; i++) { days.push(k); if (k >= today) break; k = addDays(k, 1); }
+  const def = o.defaultMs; const defDay = def ? dayKey(def) : rec.date; const defTime = def ? hm(def) : '';
+  const body = `
+    ${o.intro ? `<p>${o.intro}</p>` : ''}
+    <div class="taskbox"><b>${esc(rec.task)}</b><span>Bắt đầu ${fmtDay(rec.date)} lúc ${hm(rec.start)}${rec.end != null ? ` – kết thúc tạm: ${fmtDT(rec.end, rec.date)}` : ''}</span></div>
+    <div class="form-grid">
+      <label class="field">Ngày kết thúc<select data-f="day">${days.map(d => `<option value="${d}" ${d === defDay ? 'selected' : ''}>${fmtDay(d)}</option>`).join('')}</select></label>
+      <label class="field">Giờ kết thúc (JST)<input type="time" data-f="time" value="${defTime}" step="60" autofocus></label>
+    </div>
+    <div class="err" data-f="err"></div>`;
+  const read = root => {
+    const d = root.querySelector('[data-f=day]').value, t = root.querySelector('[data-f=time]').value, err = root.querySelector('[data-f=err]');
+    if (!t) { err.textContent = 'Hãy nhập giờ kết thúc.'; return null; }
+    const ms = at(d, t);
+    if (ms <= rec.start) { err.textContent = 'Giờ kết thúc phải sau giờ bắt đầu (' + hm(rec.start) + ').'; return null; }
+    if (ms > now() + 30000) { err.textContent = 'Giờ kết thúc không được sau thời điểm hiện tại (' + hm(now()) + ').'; return null; }
+    return ms;
+  };
+  const actions = (o.preActions || []).slice();
+  if (o.allowKeep && rec.end != null) actions.push({ label: `Giữ nguyên ${fmtDT(rec.end, rec.date)}`, cls: 'big', onClick: () => { o.onDone(rec.end, true); } });
+  actions.push({ label: o.saveLabel || 'Lưu giờ kết thúc', cls: 'primary big', onClick: root => { const ms = read(root); if (ms == null) return false; o.onDone(ms, false); } });
+  if (!o.required) actions.push({ label: 'Quay lại', cls: 'ghost', onClick: () => { o.onCancel && o.onCancel(); } });
+  return openModal({ title: o.title || 'Đã xong lúc…', tone: o.tone || 'run', body, actions, kind: o.kind || 'endpick' });
+}
+
+/* ---------- Hành động chính ---------- */
+function finishRecord(rec, endMs, opt = {}) {
+  if (rec.unconfirmed && rec.reason === 'midnight' && !opt.confirmed) {
+    pickEndTime({ rec, title: 'Nhập giờ kết thúc thực tế', tone: 'warn', intro: REASON.midnight, defaultMs: endMs,
+      onDone: ms => finishRecord(rec, ms, Object.assign({}, opt, { confirmed: true })) });
+    return false;
+  }
+  rec.end = Math.max(rec.start, endMs);
+  if (opt.confirmed && rec.unconfirmed) { rec.unconfirmed = false; rec.reason = ''; }
+  delete rec.nextCheckAt; delete rec.ot16Done; rec.updatedAt = now();
+  saveRecords(); S.idleSince = now();
+  if (S.prompt) closeModal(S.prompt);
+  if (opt.then) opt.then(); else render();
+  return true;
+}
+// tổng thời gian đã làm của task đang tạm dừng (cộng dồn các lần Tạm dừng / Tiếp tục)
+function pausedTotal(r) { return (r.carry || 0) + (r.end - r.start); }
+function startTask(key, carry, skipAsk) {
+  const t = TASK_BY_KEY.get(key); if (!t) return;
+  const cur = runningRec();
+  if (cur && cur.key === key) { toast('Task này đang chạy'); return; }
+  const rt = cur ? null : resumeTarget();
+  if (rt && rt.key === key && !skipAsk) { resumeTask(); return; }
+  // Đang chạy (hoặc đang tạm dừng) một task mà bấm sang task khác => hỏi task hiện tại đã Done chưa
+  if (!skipAsk && (cur || rt)) { askSwitch(cur || rt, !!cur, t, () => startTask(key, carry, true)); return; }
+  const go = () => {
+    const ts = now(), dk = dayKey(ts), m = memberOf(S.member);
+    records.push({ id: uid(), member: S.member, memberName: m.name, date: dk, key, task: t.name, dtms: t.dtms, dept: t.dept, path: t.path,
+      start: ts, end: null, qty: '', note: '', unconfirmed: false, reason: '', edited: false,
+      nextCheckAt: ts + WARN_MINUTES * MIN, carry: carry || 0, createdAt: ts });
+    saveRecords(); render(); toast('Bắt đầu: ' + trunc(t.name, 40));
+  };
+  if (cur) finishRecord(cur, now(), { then: go }); else go();
+}
+// Số lượng ticket đã nhập trong lần làm hiện tại (kể cả các đoạn trước khi tạm dừng)
+function chainQty(target) {
+  const chain = records.filter(r => r.member === S.member && r.key === target.key && r.date === target.date && r.start <= target.start).sort((a, b) => b.start - a.start);
+  for (const r of chain) { if (r !== target && r.doneAt) break; if (r.qty !== '' && r.qty != null) return String(r.qty); }
+  return '';
+}
+function applyDone(target, n) {
+  const same = records.filter(r => r.member === S.member && r.key === target.key && r.date === target.date && r.end != null && r.start <= target.start).sort((a, b) => b.start - a.start);
+  for (const r of same) { if (r !== target && r.doneAt) break; if (!r.check || r === target) r.check = n; delete r.paused; }
+  target.check = n; target.doneAt = target.end; target.updatedAt = now();
+  saveRecords(); render(); toast(`Đã xong Check ${n}: ${trunc(target.task, 36)}`);
+}
+function askSwitch(curRec, running, nextTask, proceed) {
+  const had = chainQty(curRec);
+  const spent = running ? now() - curRec.start + (curRec.carry || 0) : pausedTotal(curRec);
+  const body = `<div class="taskbox"><b>${esc(curRec.task)}</b><span>${running ? 'Đang chạy' : 'Đang tạm dừng'} – đã làm ${dur(spent)}</span></div>
+    <p class="muted" style="margin:0 0 10px">Chuyển sang: <b>${esc(nextTask.name)}</b></p>
+    <p><b>Task hiện tại đã xong chưa?</b></p>
+    <label class="choice"><input type="radio" name="swdone" value="0" checked> Chưa xong – chỉ chuyển task</label>
+    <label class="choice"><input type="radio" name="swdone" value="1"> Done check 1</label>
+    <label class="choice"><input type="radio" name="swdone" value="2"> Done check 2</label>
+    <div class="form-grid"><label class="field"><span>Số lượng ticket <span class="req" data-f="req" hidden>*</span></span><input type="number" min="0" step="1" inputmode="numeric" data-f="qty" value="${esc(curRec.qty)}" placeholder="${had && had !== String(curRec.qty) ? 'Đã nhập trước: ' + esc(had) : ''}"></label></div>
+    <div class="err" data-f="err"></div>`;
+  openModal({ title: 'Chuyển sang task khác', tone: 'run', body, kind: 'switch',
+    actions: [
+      { label: 'Chuyển task', cls: 'primary big', onClick: root => {
+        const n = +root.querySelector('input[name=swdone]:checked').value;
+        const inp = root.querySelector('[data-f=qty]'); const v = inp.value.trim();
+        if (n && v === '' && !had) {
+          root.querySelector('[data-f=err]').textContent = `Nhập Số lượng ticket (nhập 0 nếu không có ticket) để Done check ${n}.`;
+          inp.classList.add('need'); inp.focus(); return false;
+        }
+        if (v !== '') { curRec.qty = String(Math.max(0, Math.floor(+v) || 0)); curRec.updatedAt = now(); saveRecords(); }
+        const after = () => { if (n) applyDone(curRec, n); proceed(); };
+        setTimeout(() => { if (running) finishRecord(curRec, now(), { then: after }); else after(); }, 0);
+      } },
+      { label: 'Ở lại task hiện tại', cls: 'ghost' }
+    ],
+    onMount: root => {
+      const req = root.querySelector('[data-f=req]'), inp = root.querySelector('[data-f=qty]'), err = root.querySelector('[data-f=err]');
+      root.querySelectorAll('input[name=swdone]').forEach(r => r.addEventListener('change', () => { const n = +root.querySelector('input[name=swdone]:checked').value; req.hidden = !n; if (!n) { inp.classList.remove('need'); err.textContent = ''; } else if (inp.value === '' && !had) inp.focus(); }));
+      inp.addEventListener('input', () => { if (inp.value !== '') { inp.classList.remove('need'); err.textContent = ''; } });
+    } });
+}
+function pauseTask() {
+  const cur = runningRec(); if (!cur) return;
+  finishRecord(cur, now(), { then: () => { cur.paused = true; saveRecords(); render(); toast('Đã tạm dừng. Bấm "Tiếp tục" để làm tiếp.'); } });
+}
+// task vừa tạm dừng (bản ghi mới nhất của member hôm nay, dừng bằng nút Tạm dừng, chưa Done)
+function resumeTarget() {
+  if (!S.member || runningRec()) return null;
+  const last = records.filter(r => r.member === S.member).sort((a, b) => b.start - a.start)[0];
+  if (!last || last.end == null || !last.paused || last.doneAt || last.date !== dayKey(now()) || !TASK_BY_KEY.has(last.key)) return null;
+  return last;
+}
+function resumeTask() {
+  const p = resumeTarget(); if (!p) { toast('Không có task nào đang tạm dừng', 'warn'); return; }
+  delete p.paused; saveRecords(); startTask(p.key, pausedTotal(p));
+}
+// Done check 1/2: kết thúc task (nếu đang chạy) và gắn loại Check cho các bản ghi của lần làm này
+function doneCheck(n) {
+  const cur = runningRec(); const target = cur || resumeTarget();
+  if (!target) { toast('Chưa có task nào để đánh dấu Done', 'warn'); return; }
+  // Bắt buộc có Số lượng ticket (nhập ở lần làm hiện tại hoặc ở các đoạn trước khi tạm dừng của cùng lần làm)
+  const chain = records.filter(r => r.member === S.member && r.key === target.key && r.date === target.date && r.start <= target.start).sort((a, b) => b.start - a.start);
+  let hasQty = false;
+  for (const r of chain) { if (r !== target && r.doneAt) break; if (r.qty !== '' && r.qty != null) { hasQty = true; break; } }
+  if (!hasQty) {
+    const inp = document.querySelector(`.run [data-edit=qty][data-id="${target.id}"]`);
+    if (inp) {
+      inp.classList.add('need'); inp.focus();
+      const box = inp.closest('.fields');
+      if (box && !box.querySelector('.need-msg')) box.insertAdjacentHTML('beforeend', `<div class="need-msg">Nhập Số lượng ticket (nhập 0 nếu không có ticket) rồi bấm Done check ${n}.</div>`);
+    }
+    toast(`Chưa nhập Số lượng ticket – không thể Done check ${n}`, 'danger');
+    return;
+  }
+  const apply = () => applyDone(target, n);
+  if (cur) finishRecord(cur, now(), { then: apply }); else apply();
+}
+function exportDayFor() {
+  const today = dayKey(now()); const y = addDays(today, -1);
+  if (!recsOf(S.member, today).length && recsOf(S.member, y).length && exportStatus(S.member, y).state !== 'ok') return y;
+  return today;
+}
+function endDay() {
+  const cur = runningRec();
+  const go = () => {
+    const dk = exportDayFor();
+    if (!recsOf(S.member, dk).length) { toast('Chưa có bản ghi nào để xuất', 'warn'); logout(); return; }
+    exportDay(dk, { endDay: true });
+  };
+  if (cur) finishRecord(cur, now(), { then: go }); else go();
+}
+function logout() { closeAllModals(); S.member = null; S.screen = 'names'; S.nameQuery = ''; render(); }
+function switchPerson() {
+  const cur = runningRec();
+  const step2 = () => {
+    const dk = dayKey(now()); const st = exportStatus(S.member, dk);
+    if (st.state === 'none' || st.state === 'stale') {
+      openModal({ title: st.state === 'none' ? 'Bạn chưa xuất file hôm nay' : 'Dữ liệu hôm nay đã thay đổi sau lần xuất', tone: 'warn',
+        body: `<p>${st.state === 'none' ? `Bạn có ${st.count} bản ghi hôm nay nhưng chưa xuất Excel và upload lên SharePoint.` : `Bạn đã xuất file lúc ${hm(st.at)}, sau đó dữ liệu đã thay đổi. Cần xuất lại và upload file mới.`}</p>`,
+        actions: [
+          { label: 'Xuất Excel ngay', cls: 'primary big', onClick: () => { exportDay(dk, { endDay: true }); } },
+          { label: 'Đổi người, xuất sau', cls: 'big', onClick: () => { logout(); } },
+          { label: 'Ở lại', cls: 'ghost' }
+        ] });
+    } else logout();
+  };
+  if (cur) {
+    openModal({ title: 'Dừng task đang chạy?', tone: 'warn',
+      body: `<div class="taskbox"><b>${esc(cur.task)}</b><span>Đang chạy từ ${hm(cur.start)}</span></div><p>Đổi người sẽ dừng task này lúc ${hm(now())}.</p>`,
+      actions: [
+        { label: 'Dừng task và đổi người', cls: 'dark big', onClick: () => { setTimeout(() => finishRecord(cur, now(), { then: step2 }), 0); } },
+        { label: 'Ở lại', cls: 'ghost' }
+      ] });
+  } else step2();
+}
+function selectMember(acc) {
+  unlockAudio();
+  const t = now(); let ch = false;
+  records.forEach(r => { if (r.end == null && r.member !== acc) { r.end = Math.max(r.start, t); r.unconfirmed = true; r.reason = 'switch'; delete r.nextCheckAt; ch = true; } });
+  if (ch) saveRecords();
+  S.member = acc; S.screen = 'main'; S.idleSince = t; S.query = ''; S.dept = 'all'; S.viewDay = null;
+  render();
+  resolveUnconfirmed(() => toast('Xin chào ' + memberOf(acc).given));
+}
+// Bản ghi bị tạm đóng do tool tắt / tab bị đóng: cho phép member chạy tiếp chính bản ghi đó (đồng hồ tính từ lúc bắt đầu)
+function canReopen(r) {
+  if (r.reason !== 'closed' || r.end == null || runningRec(r.member)) return false;
+  const latest = records.filter(x => x.member === r.member).sort((a, b) => b.start - a.start)[0];
+  return latest === r && r.date === dayKey(now());
+}
+function reopenRecord(r) {
+  const t = now();
+  r.end = null; r.unconfirmed = false; r.reason = ''; r.updatedAt = t;
+  r.nextCheckAt = t + WARN_MINUTES * MIN;
+  saveRecords(); render(); toast('Task tiếp tục chạy – thời gian tính từ ' + hm(r.start));
+}
+function resolveUnconfirmed(done) {
+  const list = records.filter(r => r.member === S.member && r.unconfirmed).sort((a, b) => a.start - b.start);
+  if (!list.length) { done && done(); return; }
+  const r = list[0];
+  const def = r.end != null ? r.end : (r.start < at(r.date, WORK_END) ? at(r.date, WORK_END) : null);
+  pickEndTime({ rec: r, required: true, allowKeep: r.end != null, tone: 'warn', kind: 'unconfirmed',
+    preActions: canReopen(r) ? [{ label: `Vẫn đang làm – chạy tiếp (tính từ ${hm(r.start)})`, cls: 'resume big', onClick: () => { reopenRecord(r); setTimeout(() => resolveUnconfirmed(done), 0); } }] : [],
+    title: `Xác nhận giờ kết thúc${list.length > 1 ? ` (${list.length} bản ghi)` : ''}`,
+    intro: REASON[r.reason] || 'Bản ghi này chưa được xác nhận.', defaultMs: def,
+    onDone: (ms, kept) => {
+      if (!kept) { if (r.end != null && Math.abs(ms - r.end) >= MIN) r.edited = true; r.end = ms; }
+      r.unconfirmed = false; r.reason = ''; delete r.nextCheckAt; delete r.ot16Done; r.updatedAt = now();
+      saveRecords(); render();
+      setTimeout(() => resolveUnconfirmed(done), 0);
+    } });
+}
+
+/* ---------- Popup nhắc ---------- */
+function showGapPrompt(rec, from, to) {
+  const t = now();
+  const body = `<p>Từ <b>${hm(from)}</b> đến <b>${hm(to)}</b> tool không hoạt động (máy ngủ, khoá màn hình lâu, hoặc trình duyệt tạm cho tab "ngủ"). Task vẫn được tính giờ liên tục.</p>
+    <div class="taskbox"><b>${esc(rec.task)}</b><span>Bắt đầu ${fmtDT(rec.start)} – tổng thời gian <b class="num" data-live="el">${dur(t - rec.start + (rec.carry || 0))}</b></span></div>
+    <p class="muted">Nếu không bấm gì, task vẫn tiếp tục chạy.</p>`;
+  const actions = [
+    { label: 'Vẫn đang làm – tiếp tục', cls: 'primary big', onClick: () => { rec.nextCheckAt = now() + WARN_MINUTES * MIN; saveRecords(); render(); } },
+    { label: `Đã xong lúc ${hm(from)} (lần hoạt động cuối)`, cls: 'big', onClick: () => { setTimeout(() => finishRecord(rec, from, { confirmed: true }), 0); } },
+    { label: 'Đã xong lúc…', cls: 'big', onClick: () => { setTimeout(() => pickEndTime({ rec, defaultMs: from, onDone: ms => finishRecord(rec, ms, { confirmed: true }), onCancel: () => showGapPrompt(rec, from, to) }), 0); } }
+  ];
+  S.prompt = openModal({ title: 'Bạn vẫn làm task này trong lúc tool tạm ngưng?', tone: 'warn', body, actions, kind: 'prompt', ptype: 'gap' });
+  S.promptSoundAt = now(); chime();
+}
+function showPrompt(type, rec) {
+  const t = now();
+  const title = 'Bạn vẫn đang làm task này?';
+  const body = `<div class="taskbox"><b>${esc(rec.task)}</b><span>Bắt đầu ${fmtDT(rec.start)} – tổng thời gian <b class="num" data-live="el">${dur(t - rec.start + (rec.carry || 0))}</b></span></div>
+    <p class="muted">Nếu bạn đã xong mà quên bấm, hãy chọn giờ kết thúc thực tế.</p>`;
+  const cont = () => { rec.nextCheckAt = now() + WARN_MINUTES * MIN; saveRecords(); render(); };
+  const actions = [{ label: 'Vẫn đang làm', cls: 'primary big', onClick: cont }];
+  actions.push({ label: 'Đã xong lúc…', cls: 'big', onClick: () => {
+    setTimeout(() => pickEndTime({ rec, defaultMs: now(), onDone: ms => finishRecord(rec, ms, { confirmed: true }), onCancel: () => showPrompt(type, rec) }), 0);
+  } });
+  S.prompt = openModal({ title, tone: 'warn', body, actions, kind: 'prompt', ptype: type });
+  S.promptSoundAt = now(); chime();
+}
+function checkPrompts(t) {
+  if (!S.member) return;
+  const r = runningRec(); if (!r) return;
+  if (modalStack.length) return;
+  if (r.nextCheckAt && t >= r.nextCheckAt) showPrompt('long', r);
+}
+
+/* ---------- Heartbeat, nửa đêm, tool bị đóng ---------- */
+function writeHB(t) { S.lastHB = t; store.set('hb', t); }
+function closeOpenAt(lastMs, reason) {
+  let mine = false;
+  records.forEach(r => { if (r.end == null) { r.end = Math.max(r.start, lastMs); r.unconfirmed = true; r.reason = reason; delete r.nextCheckAt; if (r.member === S.member) mine = true; } });
+  saveRecords(); return mine;
+}
+function flagMidnight() {
+  const today = dayKey(now()); let ch = false, mine = false;
+  records.forEach(r => { if (r.end == null && r.date < today && !(r.unconfirmed && r.reason === 'midnight')) { r.unconfirmed = true; r.reason = 'midnight'; ch = true; if (r.member === S.member) mine = true; } });
+  if (ch) saveRecords();
+  if (mine) toast('Task đang chạy đã qua 00:00 – đã gắn cờ "Chưa xác nhận"', 'warn');
+}
+function recoverOnOpen() {
+  const hb = store.get('hb', 0) || 0; const t = now(); let ch = false;
+  records.forEach(r => {
+    if (r.end != null) return;
+    if (!hb || t - hb > STALE_MINUTES * MIN) { r.end = Math.max(r.start, hb || r.start); r.unconfirmed = true; r.reason = 'closed'; delete r.nextCheckAt; ch = true; }
+  });
+  if (ch) saveRecords();
+  flagMidnight();
+}
+
+/* ---------- Khoá tab (chỉ một tab hoạt động) ---------- */
+const TAB_ID = uid();
+function acquireLock(force) {
+  if (store.mode !== 'local') return true;
+  const l = store.get('lock', null);
+  if (!force && l && l.id !== TAB_ID && Date.now() - l.at < 12000) return false;
+  store.set('lock', { id: TAB_ID, at: Date.now() }); return true;
+}
+function showBlocked(lost) {
+  S.blocked = true; closeAllModals();
+  document.title = 'Bấm giờ task – đang mở ở tab khác';
+  $('#app').innerHTML = `<div class="blocked panel"><h2>Tool đang mở ở một tab khác</h2>
+    <p class="muted">${lost ? 'Tab này đã tạm ngừng vì tool vừa được mở ở tab khác.' : 'Chỉ dùng một tab cùng lúc để tránh ghi trùng dữ liệu.'} Hãy quay lại tab kia, hoặc dùng tab này.</p>
+    <button class="btn primary big" id="takeover">Dùng tab này</button></div>`;
+  $('#takeover').onclick = () => { acquireLock(true); S.blocked = false; boot(true); };
+}
+
+/* ---------- Tạo file Excel (.xlsx) không dùng thư viện ---------- */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u) { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = CRC_T[(c ^ u[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files) {
+  const enc = new TextEncoder(); const p = parts(now());
+  const dT = (p.h << 11) | (p.mi << 5) | (p.s >> 1), dD = ((p.y - 1980) << 9) | (p.mo << 5) | p.d;
+  const out = [], cen = []; let off = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), data = typeof f.data === 'string' ? enc.encode(f.data) : f.data, crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, dT, true); h.setUint16(12, dD, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true);
+    h.setUint32(22, data.length, true); h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+    out.push(new Uint8Array(h.buffer), name, data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, dT, true); c.setUint16(14, dD, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+    c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+    cen.push(new Uint8Array(c.buffer), name);
+    off += 30 + name.length + data.length;
+  }
+  const cdSize = cen.reduce((a, b) => a + b.length, 0);
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cdSize, true); e.setUint32(16, off, true);
+  const all = [...out, ...cen, new Uint8Array(e.buffer)]; const total = all.reduce((a, b) => a + b.length, 0);
+  const res = new Uint8Array(total); let pos = 0; all.forEach(a => { res.set(a, pos); pos += a.length; }); return res;
+}
+const xesc = s => String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function colName(i) { let s = ''; i++; while (i) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; }
+const EXCEL_EPOCH = Date.UTC(1899, 11, 30);
+function xlSerial(ms) { const p = parts(ms); return (Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi, p.s) - EXCEL_EPOCH) / DAY; }
+function xlDate(dk) { const [y, m, d] = dk.split('-').map(Number); return (Date.UTC(y, m - 1, d) - EXCEL_EPOCH) / DAY; }
+function sheetXml(rows, o) {
+  let x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">';
+  const fr = o.freeze;
+  x += `<sheetViews><sheetView workbookViewId="0"${o.selected ? ' tabSelected="1"' : ''}>` + (fr ? `<pane ySplit="${fr}" topLeftCell="A${fr + 1}" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A${fr + 1}" sqref="A${fr + 1}"/>` : '') + '</sheetView></sheetViews>';
+  x += '<sheetFormatPr defaultRowHeight="15"/>';
+  x += '<cols>' + o.widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('') + '</cols><sheetData>';
+  rows.forEach((row, ri) => {
+    x += `<row r="${ri + 1}">`;
+    row.forEach((c, ci) => {
+      if (!c) return; const [v, s] = c; const ref = colName(ci) + (ri + 1); const sa = s ? ` s="${s}"` : '';
+      if (v === '' || v == null) { if (s) x += `<c r="${ref}"${sa}/>`; }
+      else if (typeof v === 'number') x += `<c r="${ref}"${sa}><v>${v}</v></c>`;
+      else x += `<c r="${ref}"${sa} t="inlineStr"><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;
+    });
+    x += '</row>';
+  });
+  x += '</sheetData>' + (o.filter ? `<autoFilter ref="${o.filter}"/>` : '');
+  if (o.validations && o.validations.length) x += `<dataValidations count="${o.validations.length}">` + o.validations.map(v => `<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="${v.sqref}"><formula1>"${xesc(v.list)}"</formula1></dataValidation>`).join('') + '</dataValidations>';
+  x += '<pageMargins left="0.5" right="0.5" top="0.75" bottom="0.75" header="0.3" footer="0.3"/></worksheet>';
+  return x;
+}
+// Style index: 1 header, 2 ngày, 3 ngày giờ, 4 số, 5 chữ, 6 tổng (đậm), 7 số tổng (đậm), 8 nhãn đậm
+const STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="2"><numFmt numFmtId="164" formatCode="yyyy/mm/dd"/><numFmt numFmtId="165" formatCode="yyyy/mm/dd hh:mm"/></numFmts>
+<fonts count="3"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font></fonts>
+<fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1F3A4D"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE8EEF3"/><bgColor indexed="64"/></patternFill></fill></fills>
+<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFC9D3DC"/></left><right style="thin"><color rgb="FFC9D3DC"/></right><top style="thin"><color rgb="FFC9D3DC"/></top><bottom style="thin"><color rgb="FFC9D3DC"/></bottom><diagonal/></border></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="9">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>
+<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>
+<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>
+<xf numFmtId="1" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="1" fontId="2" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+function buildXlsx(list, acc, dk) {
+  const m = memberOf(acc); const tNow = now();
+  const H = ['Ngày', 'Member', 'Task', 'Bắt đầu', 'Kết thúc', 'Thời lượng (phút)', 'Check 1 (phút)', 'Check 2 (phút)', 'Done lúc', 'Số lượng', 'Ghi chú', 'Chưa xác nhận', 'Đã chỉnh sửa', 'DTMS Task', 'Phân loại'];
+  const rows1 = [H.map(h => [h, 1])];
+  const agg = new Map();
+  list.forEach(r => {
+    const mm = minutesOf(r, r.end ?? tNow); const q = r.qty === '' || r.qty == null ? '' : Number(r.qty);
+    rows1.push([[xlDate(r.date), 2], [r.memberName || m.name, 5], [r.task, 5], [xlSerial(r.start), 3], [r.end != null ? xlSerial(r.end) : '', 3],
+      [mm.total, 4], [r.check === 1 ? mm.total : '', 4], [r.check === 2 ? mm.total : '', 4], [r.doneAt ? xlSerial(r.doneAt) : '', 3],
+      [Number.isFinite(q) ? q : '', 4], [r.note || '', 5],
+      [r.end == null ? 'Đang chạy' : (r.unconfirmed ? 'Có' : ''), 5], [r.edited ? 'Có' : '', 5], [r.dtms || '', 5], [[r.dept, r.path].filter(Boolean).join(' › '), 5]]);
+    const a = agg.get(r.key) || { task: r.task, dtms: r.dtms, n: 0, total: 0, c1: 0, c2: 0, d1: 0, d2: 0, qty: 0, hasQty: false };
+    a.n++; a.total += mm.total;
+    if (r.check === 1) a.c1 += mm.total; if (r.check === 2) a.c2 += mm.total;
+    if (r.doneAt && r.check === 1) a.d1++; if (r.doneAt && r.check === 2) a.d2++; if (Number.isFinite(q) && q !== '') { a.qty += q; a.hasQty = true; }
+    agg.set(r.key, a);
+  });
+  const S2H = ['Task', 'DTMS Task', 'Số bản ghi', 'Tổng phút', 'Check 1 (phút)', 'Check 2 (phút)', 'Số lần Done check 1', 'Số lần Done check 2', 'Số lượng'];
+  const rows2 = [[['Member', 8], [`${m.name} (${m.acc})`, 0]], [['Ngày', 8], [xlDate(dk), 2]], [], S2H.map(h => [h, 1])];
+  const T = { n: 0, total: 0, c1: 0, c2: 0, d1: 0, d2: 0, qty: 0 };
+  [...agg.values()].sort((a, b) => b.total - a.total).forEach(a => {
+    rows2.push([[a.task, 5], [a.dtms || '', 5], [a.n, 4], [a.total, 4], [a.c1, 4], [a.c2, 4], [a.d1, 4], [a.d2, 4], [a.hasQty ? a.qty : '', 4]]);
+    T.n += a.n; T.total += a.total; T.c1 += a.c1; T.c2 += a.c2; T.d1 += a.d1; T.d2 += a.d2; T.qty += a.qty;
+  });
+  rows2.push([['Tổng cộng', 6], ['', 6], [T.n, 7], [T.total, 7], [T.c1, 7], [T.c2, 7], [T.d1, 7], [T.d2, 7], [T.qty, 7]]);
+  return buildWorkbook([
+    { name: 'Chi tiết', rows: rows1, freeze: 1, widths: [12, 22, 40, 17, 17, 10, 10, 10, 17, 9, 30, 12, 12, 30, 34], filter: `A1:${colName(H.length - 1)}${rows1.length}` },
+    { name: 'Tổng hợp', rows: rows2, freeze: 4, widths: [42, 32, 11, 11, 13, 13, 12, 12, 10] }
+  ]);
+}
+function buildWorkbook(sheets) {
+  const W = 'application/vnd.openxmlformats-officedocument.spreadsheetml';
+  const absRef = r => r.split(':').map(x => x.replace(/^([A-Z]+)(\d+)$/, '$$$1$$$2')).join(':');
+  const files = [
+    { name: '[Content_Types].xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="${W}.sheet.main+xml"/>${sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="${W}.worksheet+xml"/>`).join('')}<Override PartName="/xl/styles.xml" ContentType="${W}.styles+xml"/></Types>` },
+    { name: '_rels/.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
+    { name: 'xl/workbook.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="0"/></bookViews><sheets>${sheets.map((s, i) => `<sheet name="${xesc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets>${sheets.some(s => s.filter) ? '<definedNames>' + sheets.map((s, i) => s.filter ? `<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${xesc(s.name)}'!${absRef(s.filter)}</definedName>` : '').join('') + '</definedNames>' : ''}</workbook>` },
+    { name: 'xl/_rels/workbook.xml.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
+    { name: 'xl/styles.xml', data: STYLES_XML }
+  ];
+  sheets.forEach((s, i) => files.push({ name: `xl/worksheets/sheet${i + 1}.xml`, data: sheetXml(s.rows, Object.assign({ selected: i === 0 }, s)) }));
+  return zipStore(files);
+}
+function exportFileName(acc, dk) { return `TimeLog_${asciiName(memberOf(acc).name) || acc}_${dk.replace(/-/g, '')}.xlsx`; }
+async function saveFile(name, bytes) {
+  try {
+    const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob); const a = document.createElement('a');
+    a.href = url; a.download = name; a.style.display = 'none'; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 4000);
+    return 'saved';
+  } catch (e) { return 'failed'; }
+}
+async function exportDay(dk, o = {}) {
+  const acc = S.member; const list = recsOf(acc, dk);
+  if (!list.length) { toast('Chưa có bản ghi nào trong ngày này', 'warn'); return; }
+  const prev = exportStatus(acc, dk);
+  const bytes = buildXlsx(list, acc, dk); const fname = exportFileName(acc, dk);
+  const res = await saveFile(fname, bytes);
+  
+
+  if (res === 'failed') { toast('Không tải được file. Hãy thử lại.', 'danger'); return; }
+  markExported(acc, dk);
+  const unconf = list.filter(r => r.unconfirmed).length, running = list.filter(r => r.end == null).length;
+  render();
+  openModal({ title: 'Đã tải file Excel', tone: 'run', kind: 'export',
+    body: `<div class="taskbox"><b>${esc(fname)}</b><span>${list.length} bản ghi – ${fmtDay(dk)}</span></div>
+      ${prev.state === 'stale' ? `<div class="banner danger"><p><b>Đây là file mới.</b> Bạn đã xuất file ngày này lúc ${hm(prev.at)}, sau đó dữ liệu đã thay đổi. Hãy upload file này lên SharePoint và ghi đè file cũ.</p></div>` : ''}
+      ${prev.state === 'ok' ? `<p class="muted">Ngày này đã được xuất lúc ${hm(prev.at)} và dữ liệu không đổi. Nếu đã upload rồi thì không cần upload lại.</p>` : ''}
+      ${unconf ? `<div class="banner"><p>Còn ${unconf} bản ghi chưa xác nhận giờ kết thúc.</p></div>` : ''}
+      ${running ? `<div class="banner"><p>Có task đang chạy – file ghi thời lượng tính đến lúc xuất.</p></div>` : ''}
+      <p style="margin-top:12px"><b>Kéo thả file vừa tải vào thư mục này.</b></p>`,
+    actions: [
+      { label: 'Mở thư mục SharePoint', cls: 'primary big', onClick: () => { openSP(); return false; } },
+      { label: o.endDay ? 'Xong – kết thúc phiên làm việc' : 'Đóng', cls: 'big', onClick: () => { if (o.endDay) setTimeout(logout, 0); } }
+    ] });
+}
+
+/* ---------- Cập nhật danh sách member / task từ file template ---------- */
+/* ---------- Cấu hình: member, task list, link SharePoint – nạp từ file config (Update_config) ---------- */
+function getSettings() { return store.get('cfg.settings', null) || {}; }
+function spUrl() { return getSettings().sharepointUrl || ''; }
+function openSP() { const u = spUrl(); if (!u) { toast('Chưa có link SharePoint trong cấu hình – hãy báo PM/teamlead', 'warn'); return; } window.open(u, '_blank', 'noopener'); }
+function hasConfig() { return MEMBER_LIST.length > 0 && TASK_LIST.length > 0; }
+function fmtStamp(ms) { return `${hm(ms)} ${dayKey(ms).slice(8)}/${dayKey(ms).slice(5, 7)}/${dayKey(ms).slice(0, 4)}`; }
+function configStatusText() {
+  const s = getSettings();
+  if (!hasConfig()) return 'Máy này chưa có cấu hình.';
+  return `${MEMBER_LIST.length} member, ${TASK_LIST.length} task${s.version ? ` – cấu hình ${esc(s.version)}` : ''}${s.at ? `, nạp lúc ${fmtStamp(s.at)}` : ''}.${spUrl() ? '' : ' <b>Chưa có link SharePoint.</b>'}`;
+}
+function withPin(fn) {
+  if (!ADMIN_PIN) return fn();
+  openModal({ title: 'Nhập mã PIN quản lý', row: true,
+    body: '<label class="field">Mã PIN<input type="password" data-f="pin" autofocus autocomplete="off"></label><div class="err" data-f="err"></div>',
+    actions: [{ label: 'Huỷ', cls: 'ghost' }, { label: 'Tiếp tục', cls: 'primary', onClick: root => {
+      if (root.querySelector('[data-f=pin]').value !== ADMIN_PIN) { root.querySelector('[data-f=err]').textContent = 'Mã PIN không đúng.'; return false; }
+      setTimeout(fn, 0);
+    } }] });
+}
+
+/* template config: Member + Task + Cài đặt + Hướng dẫn */
+const MEMBER_HEAD = ['Member', 'Account', 'Trạng thái'];
+const TASK_HEAD = ['新/既存業務', '新部署名', 'Level1_業務名', 'Level2_業務名', 'Level3_業務名', 'DTMS TASK'];
+const SETTING_HEAD = ['Mục', 'Giá trị', 'Ghi chú'];
+function configTemplateBytes() {
+  const s = getSettings(); const has = hasConfig();
+  const mem = [MEMBER_HEAD.map(h => [h, 1])];
+  if (has) ALL_MEMBERS.forEach(m => mem.push([[m.name, 5], [m.acc, 5], [m.active ? 'Đang làm' : 'Nghỉ', 5]]));
+  else mem.push([['Nguyễn Văn A (ví dụ – thay bằng member thật)', 5], ['AnhNV1', 5], ['Đang làm', 5]]);
+  const tsk = [TASK_HEAD.map(h => [h, 1])];
+  if (has) TASK_LIST.forEach(t => tsk.push([[t.kind, 5], [t.dept, 5], [t.l1, 5], [t.l2, 5], [t.l3, 5], [t.dtms, 5]]));
+  else tsk.push([['既存', 5], ['部署（ví dụ）', 5], ['Level1（ví dụ）', 5], ['Level2（ví dụ）', 5], ['Tên task（ví dụ – thay bằng task thật）', 5], ['DTMS TASK（ví dụ）', 5]]);
+  const set = [SETTING_HEAD.map(h => [h, 1]),
+    [['Link thư mục SharePoint', 5], [s.sharepointUrl || '', 5], ['Thư mục member upload file Excel cuối ngày (link chia sẻ của thư mục)', 5]],
+    [['Phiên bản cấu hình', 5], [s.version || (dayKey(now()) + '-1'), 5], ['Đổi mỗi lần sửa file, ví dụ 2026-11-17-1. Hiện ở cuối màn hình chọn tên để kiểm tra máy đang dùng bản nào.', 5]]];
+  const guide = [
+    'Hướng dẫn file cấu hình (Update_config) – dành cho PM/teamlead', '',
+    'File này chứa thông tin nội bộ (member, task của khách hàng, link SharePoint). CHỈ lưu trong thư mục SharePoint của team. Không gửi qua kênh công khai, không đưa lên GitHub.', '',
+    'Sheet "Member": mỗi dòng một người – Member | Account | Trạng thái. Member mới: thêm dòng. Member nghỉ: chọn "Nghỉ" (hoặc xoá dòng). Không đổi Account của người đang làm.',
+    'Sheet "Task": cấu trúc giống file Member_Task gốc. DTMS TASK bắt buộc. Tên hiển thị = Level3 (nếu Level3 là "－" thì dùng Level2). Ghi "キャンセル" ở cột 新/既存業務 để bỏ task.',
+    'Sheet "Cài đặt": Link thư mục SharePoint và Phiên bản cấu hình. Nhớ đổi Phiên bản cấu hình mỗi lần sửa file.', '',
+    'Nạp vào tool: mở link tool → màn hình chọn tên → nút "Update_config" → "Chọn file config…" → xem trước → "Áp dụng". Làm một lần trên mỗi máy (mỗi trình duyệt).',
+    'Sau khi nạp, xoá file config khỏi thư mục Downloads của máy khách hàng.'
+  ].map((l, i) => [[l, i === 0 ? 8 : 0]]);
+  return buildWorkbook([
+    { name: 'Member', rows: mem, freeze: 1, widths: [32, 18, 14], validations: [{ sqref: 'C2:C2000', list: 'Đang làm,Nghỉ' }] },
+    { name: 'Task', rows: tsk, freeze: 1, widths: [14, 18, 22, 34, 44, 44], filter: `A1:F${tsk.length}` },
+    { name: 'Cài đặt', rows: set, freeze: 1, widths: [26, 70, 70] },
+    { name: 'Hướng dẫn', rows: guide, widths: [130] }
+  ]);
+}
+async function downloadConfigTemplate() {
+  const name = `Template_Config_${dayKey(now()).replace(/-/g, '')}.xlsx`;
+  const res = await saveFile(name, configTemplateBytes());
+  if (res === 'saved') toast('Đã tải ' + name); else toast('Không tải được file', 'danger');
+}
+function openConfigAdmin() {
+  const m = openModal({ title: 'Update_config', tone: 'run',
+    body: `<p>Đang dùng: ${configStatusText()}</p>
+      <ol class="steps"><li>Lấy file config mới nhất trong thư mục SharePoint của team (hoặc bấm "Tải template config" để lấy cấu hình đang dùng trên máy này).</li>
+      <li>Sửa trong Excel: sheet <b>Member</b>, <b>Task</b>, <b>Cài đặt</b>, rồi lưu lại.</li>
+      <li>Bấm "Chọn file config…". Bạn sẽ xem trước thay đổi rồi mới áp dụng.</li></ol>
+      <p class="muted" style="margin-top:10px">Cấu hình được lưu trên trình duyệt của máy này, dùng chung cho mọi member trên máy. File config chứa thông tin nội bộ – chỉ lưu trên SharePoint của team và xoá khỏi Downloads sau khi nạp.</p>`,
+    actions: [
+      { label: 'Chọn file config…', cls: 'primary big', onClick: () => { pickConfigFile(m); return false; } },
+      { label: 'Tải template config', cls: 'big', onClick: () => { downloadConfigTemplate(); return false; } },
+      ...(hasConfig() || spUrl() ? [{ label: 'Xoá cấu hình trên máy này', cls: 'danger-ghost', onClick: () => { setTimeout(confirmClearConfig, 0); } }] : []),
+      { label: 'Đóng', cls: 'ghost' }
+    ] });
+}
+function pickConfigFile(adminModal) {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.xlsx'; inp.style.display = 'none';
+  inp.addEventListener('change', async () => {
+    const f = inp.files && inp.files[0]; inp.remove(); if (!f) return;
+    try {
+      const sheets = await readTableFile(f);
+      const res = { members: parseMemberSheets(sheets), tasks: parseTaskSheets(sheets), settings: parseSettingsSheets(sheets) };
+      closeModal(adminModal);
+      showConfigPreview(res, f.name);
+    } catch (e) {
+      const msg = e && e.message === 'nodecomp' ? 'Trình duyệt này không đọc được file Excel nén. Hãy cập nhật Edge/Chrome lên bản mới.'
+        : e && e.message === 'notxlsx' ? 'File không phải định dạng .xlsx hợp lệ. Hãy lưu lại bằng Excel dưới dạng .xlsx.'
+        : 'Không đọc được file: ' + (e && e.message ? e.message : e);
+      openModal({ title: 'Không đọc được file', tone: 'danger', body: `<p>${esc(msg)}</p>`, actions: [{ label: 'Đóng', cls: 'big' }] });
+    }
+  });
+  document.body.appendChild(inp); inp.click();
+}
+function confirmClearConfig() {
+  openModal({ title: 'Xoá cấu hình trên máy này?', tone: 'danger', row: true,
+    body: '<p>Xoá danh sách member, task list và link SharePoint khỏi trình duyệt của máy này. Dữ liệu bấm giờ của member <b>không</b> bị xoá. Sau đó cần nạp lại file config mới dùng được tool.</p>',
+    actions: [{ label: 'Huỷ', cls: 'ghost' }, { label: 'Xoá cấu hình', cls: 'danger', onClick: () => {
+      store.del('cfg.members'); store.del('cfg.tasks'); store.del('cfg.settings'); buildCatalog(); render(); toast('Đã xoá cấu hình trên máy này');
+    } }] });
+}
+
+/* đọc file .xlsx (không thư viện) hoặc .csv */
+async function readTableFile(file) {
+  const buf = await file.arrayBuffer();
+  if (/\.csv$/i.test(file.name)) return [{ name: 'CSV', rows: parseCsv(decodeText(buf)) }];
+  const u = new Uint8Array(buf); if (u.length < 4 || u[0] !== 0x50 || u[1] !== 0x4b) throw new Error('notxlsx');
+  return readXlsx(buf);
+}
+function decodeText(buf) {
+  let s; try { s = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { s = new TextDecoder('shift_jis').decode(buf); }
+  return s.replace(/^\uFEFF/, '');
+}
+function parseCsv(text) {
+  const first = text.split(/\r?\n/, 1)[0] || '';
+  const d = (first.split('\t').length > first.split(',').length) ? '\t' : (first.split(';').length > first.split(',').length ? ';' : ',');
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === d) { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+function unzipIndex(buf) {
+  const dv = new DataView(buf); let e = buf.byteLength - 22;
+  while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error('notxlsx');
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true); const files = {}; const td = new TextDecoder();
+  for (let i = 0; i < n; i++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('notxlsx');
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    files[td.decode(new Uint8Array(buf, p + 46, nl))] = { method, csize, off };
+    p += 46 + nl + el + cl;
+  }
+  return {
+    async read(name) {
+      const f = files[name] || files[Object.keys(files).find(k => k.toLowerCase() === name.toLowerCase())]; if (!f) return null;
+      const start = f.off + 30 + dv.getUint16(f.off + 26, true) + dv.getUint16(f.off + 28, true);
+      const data = new Uint8Array(buf, start, f.csize); let out;
+      if (f.method === 0) out = data;
+      else if (f.method === 8) {
+        if (typeof DecompressionStream === 'undefined') throw new Error('nodecomp');
+        let ds; try { ds = new DecompressionStream('deflate-raw'); } catch (err) { throw new Error('nodecomp'); }
+        out = new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer());
+      } else throw new Error('notxlsx');
+      return new TextDecoder().decode(out);
+    }
+  };
+}
+async function readXlsx(buf) {
+  const z = unzipIndex(buf); const P = s => new DOMParser().parseFromString(s, 'application/xml');
+  const tag = (el, n) => Array.from(el.getElementsByTagNameNS('*', n));
+  const unx = s => s.replace(/_x([0-9A-Fa-f]{4})_/g, (m, h) => String.fromCharCode(parseInt(h, 16)));
+  const txt = el => unx(tag(el, 't').filter(t => t.parentNode.localName !== 'rPh').map(t => t.textContent).join(''));
+  const wb = await z.read('xl/workbook.xml'); if (!wb) throw new Error('notxlsx');
+  const relsXml = await z.read('xl/_rels/workbook.xml.rels'); const ssXml = await z.read('xl/sharedStrings.xml');
+  const shared = ssXml ? tag(P(ssXml), 'si').map(txt) : [];
+  const rels = {}; if (relsXml) tag(P(relsXml), 'Relationship').forEach(r => { rels[r.getAttribute('Id')] = r.getAttribute('Target'); });
+  const colIdx = ref => { const m = /^([A-Z]+)/.exec(ref); let n = 0; for (const ch of m[1]) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; };
+  const sheets = [];
+  for (const sh of tag(P(wb), 'sheet')) {
+    const ra = Array.from(sh.attributes).find(a => a.localName === 'id' && a.name !== 'sheetId'); let target = ra && rels[ra.value]; if (!target) continue;
+    target = target.startsWith('/') ? target.slice(1) : 'xl/' + target.replace(/^\.\//, '');
+    const xml = await z.read(target); if (!xml) continue;
+    const rows = [];
+    tag(P(xml), 'row').forEach(row => {
+      const rn = parseInt(row.getAttribute('r'), 10) || rows.length + 1; const arr = []; let ci = 0;
+      tag(row, 'c').forEach(c => {
+        const ref = c.getAttribute('r'); if (ref) ci = colIdx(ref);
+        const ty = c.getAttribute('t'); let v = '';
+        if (ty === 'inlineStr') v = txt(c);
+        else { const ve = tag(c, 'v')[0]; const raw = ve ? ve.textContent : ''; v = ty === 's' ? (shared[+raw] ?? '') : ty === 'b' ? (raw === '1' ? 'TRUE' : 'FALSE') : raw; }
+        arr[ci] = v; ci++;
+      });
+      rows[rn - 1] = Array.from(arr, x => x ?? '');
+    });
+    sheets.push({ name: sh.getAttribute('name'), rows: Array.from(rows, r => r || []) });
+  }
+  return sheets;
+}
+
+/* nhận diện cột theo tiêu đề */
+const hNorm = s => norm(String(s ?? '')).replace(/[\s_]+/g, '');
+function findHeader(rows, test) { for (let i = 0; i < Math.min(rows.length, 15); i++) if ((rows[i] || []).some(c => test(hNorm(c)))) return i; return -1; }
+function parseMemberSheets(sheets) {
+  for (const sh of sheets) {
+    const hi = findHeader(sh.rows, h => h === 'account' || h === 'taikhoan'); if (hi < 0) continue;
+    const H = sh.rows[hi].map(hNorm);
+    const ia = H.findIndex(h => h === 'account' || h === 'taikhoan');
+    let iname = H.findIndex(h => ['member', 'ten', 'hoten', 'hovaten', 'name', 'tenmember', 'fullname'].includes(h));
+    if (iname < 0) iname = ia === 0 ? 1 : 0;
+    const ist = H.findIndex(h => h.includes('trangthai') || h === 'status');
+    const rows = [], errors = [], seen = new Map();
+    for (let r = hi + 1; r < sh.rows.length; r++) {
+      const row = sh.rows[r] || []; const name = String(row[iname] ?? '').trim(), acc = String(row[ia] ?? '').trim();
+      if (!name && !acc) continue;
+      if (!name || !acc) { errors.push(`Dòng ${r + 1}: thiếu ${!name ? 'tên' : 'account'}.`); continue; }
+      const k = acc.toLowerCase();
+      if (seen.has(k)) { errors.push(`Dòng ${r + 1}: account "${acc}" trùng với dòng ${seen.get(k)}.`); continue; }
+      seen.set(k, r + 1);
+      const st = ist >= 0 ? hNorm(row[ist]) : '';
+      const active = !(st.includes('nghi') || ['out', 'inactive', 'x', '0', 'false', 'n', 'no', 'off'].includes(st));
+      rows.push([name, acc, active]);
+    }
+    if (!rows.length && !errors.length) errors.push(`Sheet "${sh.name}" không có dòng dữ liệu nào.`);
+    return { sheet: sh.name, rows, errors, warnings: [] };
+  }
+  return { missing: true, rows: [], errors: ['Không tìm thấy cột "Account" trong file. Hãy dùng file template của tool.'], warnings: [] };
+}
+function parseTaskSheets(sheets) {
+  for (const sh of sheets) {
+    const hi = findHeader(sh.rows, h => h.includes('dtms') && h.length <= 20); if (hi < 0) continue;
+    const H = sh.rows[hi].map(hNorm);
+    const col = f => H.findIndex(f);
+    const ix = { kind: col(h => h.includes('既存')), dept: col(h => h.includes('部署')), l1: col(h => h.includes('level1')), l2: col(h => h.includes('level2')), l3: col(h => h.includes('level3')), dtms: col(h => h.includes('dtms')) };
+    const miss = Object.entries({ dept: '新部署名', l1: 'Level1_業務名', l2: 'Level2_業務名', l3: 'Level3_業務名' }).filter(([k]) => ix[k] < 0).map(([, v]) => v);
+    if (miss.length) return { rows: [], errors: [`Sheet "${sh.name}" thiếu cột: ${miss.join(', ')}.`], warnings: [] };
+    const rows = [], errors = [], warnings = [], seen = new Set(); let cancel = 0, dup = 0; const noDtms = [], noName = [];
+    const g = (row, i) => i < 0 ? '' : String(row[i] ?? '').trim();
+    for (let r = hi + 1; r < sh.rows.length; r++) {
+      const row = sh.rows[r] || []; const v = { kind: g(row, ix.kind), dept: g(row, ix.dept), l1: g(row, ix.l1), l2: g(row, ix.l2).replace(/\s+/g, ' '), l3: g(row, ix.l3), dtms: g(row, ix.dtms) };
+      if (!Object.values(v).some(Boolean)) continue;
+      if (v.kind.includes('キャンセル')) { cancel++; continue; }
+      if (!v.dtms) { noDtms.push(r + 1); continue; }
+      if (isDash(v.l3) && isDash(v.l2)) { noName.push(r + 1); continue; }
+      const key = [v.dept, v.l1, v.l2, v.l3, v.dtms].join('|');
+      if (seen.has(key)) { dup++; continue; } seen.add(key);
+      rows.push([v.dept, v.l1, v.l2, v.l3, v.dtms, v.kind]);
+    }
+    if (cancel) warnings.push(`Bỏ qua ${cancel} dòng "キャンセル".`);
+    if (dup) warnings.push(`Bỏ qua ${dup} dòng trùng lặp.`);
+    if (noDtms.length) warnings.push(`Bỏ qua ${noDtms.length} dòng thiếu DTMS TASK (dòng ${noDtms.slice(0, 8).join(', ')}${noDtms.length > 8 ? '…' : ''}).`);
+    if (noName.length) warnings.push(`Bỏ qua ${noName.length} dòng không có tên task ở Level2/Level3 (dòng ${noName.slice(0, 8).join(', ')}).`);
+    if (!rows.length) errors.push(`Sheet "${sh.name}" không có task hợp lệ nào.`);
+    return { sheet: sh.name, rows, errors, warnings };
+  }
+  return { missing: true, rows: [], errors: ['Không tìm thấy cột "DTMS TASK" trong file. Hãy dùng file template của tool.'], warnings: [] };
+}
+
+/* đọc sheet "Cài đặt" */
+function parseSettingsSheets(sheets) {
+  const out = { found: false, sharepointUrl: '', version: '', errors: [], warnings: [] };
+  for (const sh of sheets) {
+    sh.rows.forEach(row => {
+      const k = hNorm(row && row[0]); const v = String((row && row[1]) ?? '').trim();
+      if (!k || k.length > 40) return;
+      if (k.includes('sharepoint')) { out.found = true; out.sharepointUrl = v; }
+      else if (k.includes('phienban') || k.includes('version')) { out.found = true; out.version = v; }
+    });
+    if (out.found) break;
+  }
+  if (out.found && out.sharepointUrl && !/^https:\/\//i.test(out.sharepointUrl)) out.errors.push('Link thư mục SharePoint phải bắt đầu bằng https://');
+  if (out.found && !out.sharepointUrl) out.warnings.push('Sheet Cài đặt chưa có Link thư mục SharePoint – nút "Mở thư mục SharePoint" sẽ không dùng được.');
+  return out;
+}
+
+/* xem trước & áp dụng file config */
+function showConfigPreview(res, fileName) {
+  const li = arr => `<ul class="preview-list">${arr.slice(0, 12).map(x => `<li>${esc(x)}</li>`).join('')}${arr.length > 12 ? `<li>… và ${arr.length - 12} mục khác</li>` : ''}</ul>`;
+  const M = res.members.missing ? null : res.members, T = res.tasks.missing ? null : res.tasks, ST = res.settings.found ? res.settings : null;
+  const errors = [...(M ? M.errors : []), ...(T ? T.errors : []), ...(ST ? ST.errors : [])];
+  if (!M && !T && !ST) errors.push('File không có sheet Member (cột Account), Task (cột DTMS TASK) hay Cài đặt. Hãy dùng file template config.');
+  if (!hasConfig() && (!M || !T)) errors.push('Máy này chưa có cấu hình: file config lần đầu phải có đủ sheet Member và Task.');
+  if (errors.length) {
+    openModal({ title: 'File config có lỗi – chưa cập nhật', tone: 'danger',
+      body: `<p>Hãy sửa các lỗi sau trong file "${esc(fileName)}" rồi tải lên lại:</p>${li(errors)}`,
+      actions: [{ label: 'Chọn file khác…', cls: 'primary big', onClick: () => { setTimeout(openConfigAdmin, 0); } }, { label: 'Đóng', cls: 'ghost' }] });
+    return;
+  }
+  let html = ''; const warnings = [...(M ? M.warnings : []), ...(T ? T.warnings : []), ...(ST ? ST.warnings : [])];
+  if (M) {
+    const cur = new Map(ALL_MEMBERS.map(m => [m.acc.toLowerCase(), m])), next = new Map(M.rows.map(r => [r[1].toLowerCase(), r]));
+    const active = M.rows.filter(r => r[2]);
+    const added = active.filter(r => !cur.get(r[1].toLowerCase()) || !cur.get(r[1].toLowerCase()).active).map(r => `${r[0]} (${r[1]})`);
+    const out = ALL_MEMBERS.filter(m => m.active && !(next.get(m.acc.toLowerCase()) || [])[2]).map(m => `${m.name} (${m.acc})`);
+    const renamed = M.rows.filter(r => cur.get(r[1].toLowerCase()) && cur.get(r[1].toLowerCase()).name !== r[0]).map(r => `${cur.get(r[1].toLowerCase()).name} → ${r[0]}`);
+    html += `<h3 style="margin:14px 0 4px;font-size:16px">Member</h3><div class="kv"><span>Đang làm</span><b>${MEMBER_LIST.length} → ${active.length}</b><span>Vào</span><b>${added.length}</b><span>Ra</span><b>${out.length}</b><span>Đổi tên</span><b>${renamed.length}</b></div>`;
+    if (hasConfig()) { if (added.length) html += `<p><b>Vào:</b></p>${li(added)}`; if (out.length) html += `<p><b>Ra:</b></p>${li(out)}`; if (renamed.length) html += `<p><b>Đổi tên:</b></p>${li(renamed)}`; }
+  } else html += '<p class="muted">File không có sheet Member – danh sách member giữ nguyên.</p>';
+  if (T) {
+    const keyOf = r => r.slice(0, 5).join('|'); const nextKeys = new Set(T.rows.map(keyOf));
+    const nm = r => isDash(r[3]) ? r[2].replace(/^\d+_/, '') : r[3];
+    const added = T.rows.filter(r => !TASK_BY_KEY.has(keyOf(r))).map(r => `${nm(r)} – ${r[0]}`);
+    const removed = TASK_LIST.filter(t => !nextKeys.has(t.key)).map(t => `${t.name} – ${t.dept}`);
+    html += `<h3 style="margin:14px 0 4px;font-size:16px">Task list</h3><div class="kv"><span>Số task</span><b>${TASK_LIST.length} → ${T.rows.length}</b><span>Task mới</span><b>${added.length}</b><span>Task bị bỏ</span><b>${removed.length}</b><span>Bộ phận</span><b>${new Set(T.rows.map(r => r[0])).size}</b></div>`;
+    if (hasConfig()) { if (added.length) html += `<p><b>Task mới:</b></p>${li(added)}`; if (removed.length) html += `<p><b>Task bị bỏ</b> (bản ghi cũ vẫn giữ nguyên):</p>${li(removed)}`; }
+  } else html += '<p class="muted">File không có sheet Task – task list giữ nguyên.</p>';
+  if (ST) {
+    const s = getSettings();
+    html += `<h3 style="margin:14px 0 4px;font-size:16px">Cài đặt</h3><div class="kv"><span>Link SharePoint</span><b>${ST.sharepointUrl ? (ST.sharepointUrl === s.sharepointUrl ? 'không đổi' : (s.sharepointUrl ? 'đổi link mới' : 'đã có')) : 'trống'}</b><span>Phiên bản cấu hình</span><b>${esc(s.version || '–')} → ${esc(ST.version || '–')}</b></div>`;
+  } else html += '<p class="muted">File không có sheet Cài đặt – link SharePoint giữ nguyên.</p>';
+  openModal({ title: 'Xem trước: Update_config', tone: 'run',
+    body: `<p class="muted">File "${esc(fileName)}"</p>${warnings.length ? `<div class="banner" style="margin:8px 0"><p>${warnings.map(esc).join('<br>')}</p></div>` : ''}${html}`,
+    actions: [
+      { label: 'Áp dụng cấu hình mới', cls: 'primary big', onClick: () => {
+        const at = now();
+        if (M) store.set('cfg.members', { rows: M.rows, at, file: fileName });
+        if (T) store.set('cfg.tasks', { rows: T.rows, at, file: fileName });
+        if (ST) store.set('cfg.settings', { sharepointUrl: ST.sharepointUrl, version: ST.version, at, file: fileName });
+        else { const s = getSettings(); store.set('cfg.settings', Object.assign({}, s, { at, file: fileName })); }
+        buildCatalog(); render(); toast('Đã cập nhật cấu hình' + (ST && ST.version ? ' ' + ST.version : ''));
+      } },
+      { label: 'Huỷ', cls: 'ghost' }
+    ] });
+}
+
+/* ---------- Giao diện ---------- */
+function headerHtml(active) {
+  const m = memberOf(S.member);
+  return `<header class="top">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">⏱</span>Bấm giờ task</div>
+    <nav class="tabs" aria-label="Màn hình"><button data-nav="main" ${active === 'main' ? 'aria-current="page"' : ''}>Bấm giờ</button><button data-nav="today" ${active === 'today' ? 'aria-current="page"' : ''}>Hôm nay</button></nav>
+    <div class="spacer"></div>
+    <div class="clock num"><span data-live="clock">${hm(now())}</span><small>JST</small></div>
+    <div class="me"><span class="me-name">${esc(m.name)}</span><button class="btn ghost" data-act="switch">Đổi người</button></div>
+  </header><div id="banners"></div>`;
+}
+function render() {
+  if (S.blocked) return;
+  const app = $('#app');
+  if (!S.member) { app.innerHTML = namesHtml(); bindNames(); updateTitle(now()); return; }
+  if (S.screen === 'today') { app.innerHTML = headerHtml('today') + todayHtml(); }
+  else { app.innerHTML = headerHtml('main') + mainHtml(); renderTaskList(); }
+  S.lastBanners = ''; updateLive(now());
+}
+
+/* màn hình chọn tên */
+function namesHtml() {
+  const q = norm(S.nameQuery);
+  const list = MEMBER_LIST.filter(m => !q || norm(m.name + ' ' + m.acc).includes(q));
+  return `<div class="names">
+    <div class="names-head"><div><h1>Let's start a day!</h1><p class="sub">Chọn tên của bạn để bắt đầu phiên làm việc.</p></div>
+      <div class="big-clock num"><span data-live="clock">${hm(now())}</span><small>Giờ Nhật (JST) – ${fmtDay(dayKey(now()))}</small></div></div>
+    ${!hasConfig() ? `<div class="panel setup"><h2 style="margin:0 0 6px">Máy này chưa có cấu hình</h2>
+      <p style="margin:0 0 14px">Tool cần file config của team (danh sách member, task list, link SharePoint) trước khi dùng.<br><b>Member:</b> hãy báo PM/teamlead. <b>PM/teamlead:</b> bấm Update_config và chọn file config lấy từ SharePoint của team.</p>
+      <button class="btn primary big" data-act="upd-config">Update_config</button></div>` : `<div class="search"><input type="search" id="nameq" placeholder="Tìm tên hoặc account…" value="${esc(S.nameQuery)}" aria-label="Tìm tên"></div>
+    <div class="mgrid">${list.map(m => {
+      const run = runningRec(m.acc); const unc = records.some(r => r.member === m.acc && r.unconfirmed);
+      return `<button class="mbtn" data-member="${esc(m.acc)}"><b>${esc(m.given)}</b><small>${esc(m.name)} – ${esc(m.acc)}</small>
+        ${run ? `<span class="flag run">▶ Đang chạy: ${esc(trunc(run.task, 22))}</span>` : ''}${unc ? '<span class="flag">Có bản ghi cần xác nhận</span>' : ''}</button>`;
+    }).join('') || '<div class="empty">Không tìm thấy tên phù hợp.</div>'}</div>`}
+    ${hasConfig() ? `<div class="admin">
+      <div class="admin-info"><b>Cấu hình (PM/teamlead)</b><span>${configStatusText()}</span></div>
+      <button class="btn" data-act="upd-config">Update_config</button>
+    </div>` : ''}
+    <div class="foot"><span class="ver" id="ver">Phiên bản ${APP_VERSION}${getSettings().version ? ' – cấu hình ' + esc(getSettings().version) : ''}</span>
+      <span>Lưu dữ liệu: ${store.mode === 'local' ? 'trên trình duyệt của máy này' : '<b>bộ nhớ tạm</b> (mất khi tải lại trang)'}</span></div>
+  </div>`;
+}
+function bindNames() {
+  const q = $('#nameq');
+  if (q) q.addEventListener('input', () => { S.nameQuery = q.value; const pos = q.selectionStart; $('#app').innerHTML = namesHtml(); bindNames(); const n = $('#nameq'); n.focus(); n.setSelectionRange(pos, pos); });
+}
+
+/* màn hình chính */
+function mainHtml() {
+  const r = runningRec(); const t = now();
+  const today = dayKey(t); const todays = recsOf(S.member, today);
+  const last = !r ? [...todays].reverse().find(x => x.end != null) : null;
+  const target = r || last; const rt = resumeTarget();
+  let card;
+  if (r) {
+    card = `<section class="run is-running" aria-live="polite">
+      <div class="run-state"><span class="dot"></span>Đang chạy ${r.unconfirmed ? '<span class="tag danger">Chưa xác nhận</span>' : ''}</div>
+      <h2 class="run-task">${esc(r.task)}</h2><div class="run-path">${esc(r.dept)} › ${esc(r.path)}</div>
+      <div class="run-time num" data-live="elapsed">00:00</div>
+      <div class="run-meta"><span>Bắt đầu ${fmtDT(r.start, today)}</span><span data-live="next"></span></div>`;
+  } else {
+    card = rt ? `<section class="run">
+      <div class="run-state"><span class="dot"></span>Đang tạm dừng</div>
+      <div class="paused-task">${esc(rt.task)}</div><div class="run-time num" style="color:var(--muted)">${dur(pausedTotal(rt))}<small>:${pad(Math.floor(pausedTotal(rt) / 1000) % 60)}</small></div><div class="run-path">Dừng lúc ${hm(rt.end)}. Bấm "Tiếp tục" để làm tiếp, hoặc chọn task khác.</div>`
+    : `<section class="run">
+      <div class="run-state"><span class="dot"></span>Chưa chạy task nào</div>
+      <p class="run-empty">Bấm vào một task bên cạnh để bắt đầu tính giờ.</p>
+      <div class="run-meta"><span>Hôm nay: ${todays.length} bản ghi</span><span>Tổng ${dur(todays.reduce((a, x) => a + minutesOf(x).total * MIN, 0))}</span></div>`;
+  }
+  if (target) {
+    card += `${!r && !rt ? `<div class="prev-label">Bản ghi vừa xong: ${esc(trunc(target.task, 40))} (${hm(target.start)}–${hm(target.end)})${target.doneAt ? ` – Done Check ${target.check}` : ''}</div>` : ''}
+      <div class="fields"><label class="field"><span>Số lượng ticket <span class="req" title="Bắt buộc trước khi Done check">*</span></span><input type="number" min="0" step="1" inputmode="numeric" data-edit="qty" data-id="${target.id}" value="${esc(target.qty)}"></label>
+      <label class="field">Ghi chú<input type="text" data-edit="note" data-id="${target.id}" value="${esc(target.note)}" placeholder="Không bắt buộc"></label></div>`;
+  }
+  const canDone = !!(r || rt);
+  card += `<div class="run-actions">
+    ${r ? '<button class="btn big" data-act="pause">Tạm dừng</button>' : rt ? '<button class="btn big resume" data-act="resume">▶ Tiếp tục</button>' : '<button class="btn big" disabled>Tạm dừng</button>'}
+    <button class="btn big dark" data-act="endday">Kết thúc ngày</button>
+    <button class="btn big check" data-act="done1" ${canDone ? '' : 'disabled'} title="Kết thúc task và ghi nhận đã xong Check 1">✓ Done check 1</button>
+    <button class="btn big check" data-act="done2" ${canDone ? '' : 'disabled'} title="Kết thúc task và ghi nhận đã xong Check 2">✓ Done check 2</button>
+  </div></section>`;
+
+  const q = quickTasks();
+  const quick = q.length ? `<div class="quick">${q.map(({ t: tk, fav }) => `<button class="qbtn ${r && r.key === tk.key ? 'on' : ''}" data-start="${tk.i}" title="${esc(tk.dept + ' › ' + tk.path)}">
+      ${fav ? '<span class="pin" aria-label="Đã ghim">★</span>' : ''}<span class="qn">${esc(tk.name)}</span><span class="qs">${esc(tk.dtms !== tk.name ? tk.dtms : tk.path)}</span></button>`).join('')}</div>`
+    : '<div class="empty">Chưa có task nào ở đây. Tìm task trong danh sách bên dưới và bấm ☆ để ghim lên đây – lần sau chỉ cần một lần bấm.</div>';
+
+  return `<div class="wrap"><div class="main-grid">
+    <div class="left-col">${card}
+      <section class="panel"><h3>Dòng thời gian hôm nay <span class="hint">${fmtDay(today)}</span></h3><div data-live="timeline"></div></section>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <section class="panel"><h3>Task của tôi <span class="hint">Bấm để bắt đầu – task đang chạy sẽ tự kết thúc</span></h3>${quick}</section>
+      <section class="panel"><h3>Tất cả task <span class="hint">${TASK_LIST.length} task</span></h3>
+        <div class="search"><input type="search" id="taskq" placeholder="Tìm theo tên task, DTMS, nhóm… (tiếng Nhật hoặc tiếng Việt)" value="${esc(S.query)}" aria-label="Tìm task"></div>
+        <div class="chips" role="group" aria-label="Lọc theo bộ phận"><button class="chip" data-dept="all" aria-pressed="${S.dept === 'all'}">Tất cả</button>${DEPTS.map(d => `<button class="chip" data-dept="${esc(d)}" aria-pressed="${S.dept === d}">${esc(d)}</button>`).join('')}</div>
+        <div class="tlist" id="tlist"></div>
+      </section>
+    </div>
+  </div></div>`;
+}
+function renderTaskList() {
+  const el = $('#tlist'); if (!el) return;
+  const q = norm(S.query.trim()); const words = q.split(/\s+/).filter(Boolean);
+  const f = favs(); const r = runningRec();
+  const list = TASK_LIST.filter(t => (S.dept === 'all' || t.dept === S.dept) && words.every(w => t.search.includes(w)));
+  if (!list.length) { el.innerHTML = '<div class="empty" style="border:0">Không có task nào khớp. Thử từ khoá khác hoặc chọn "Tất cả".</div>'; return; }
+  let html = '', g = null;
+  list.forEach(t => {
+    const gk = t.dept + ' › ' + t.l1;
+    if (gk !== g) { g = gk; html += `<div class="tgroup">${esc(gk)}</div>`; }
+    const on = r && r.key === t.key; const fv = f.includes(t.key);
+    html += `<div class="trow ${on ? 'on' : ''}"><button class="tpick" data-start="${t.i}"><b>${esc(t.name)}${on ? ' – đang chạy' : ''}</b><small>${esc(isDash(t.l2) ? '' : t.l2)}${t.dtms && t.dtms !== t.name ? ' | DTMS: ' + esc(t.dtms) : ''}</small></button>
+      <button class="star" data-fav="${t.i}" aria-pressed="${fv}" aria-label="${fv ? 'Bỏ ghim' : 'Ghim lên Task của tôi'}" title="${fv ? 'Bỏ ghim' : 'Ghim lên Task của tôi'}">${fv ? '★' : '☆'}</button></div>`;
+  });
+  el.innerHTML = html;
+}
+function timelineHtml() {
+  const t = now(); const today = dayKey(t);
+  const list = records.filter(r => r.member === S.member && (r.date === today || (r.end ?? t) > at(today, '00:00')) && r.start < at(today, '24:00'));
+  let h0 = 7, h1 = 20;
+  list.forEach(r => { const s = Math.max(r.start, at(today, '00:00')), e = Math.min(r.end ?? t, at(today, '24:00')); h0 = Math.min(h0, Math.floor((s - at(today, '00:00')) / 3600000)); h1 = Math.max(h1, Math.ceil((e - at(today, '00:00')) / 3600000)); });
+  h1 = Math.min(24, Math.max(h1, h0 + 4));
+  const base = at(today, '00:00'), A = base + h0 * 3600000, B = base + h1 * 3600000, W = B - A;
+  const pc = ms => ((Math.min(Math.max(ms, A), B) - A) / W * 100).toFixed(2);
+  let segs = '';
+  if (isWorkday(today)) { const ws = at(today, WORK_START), we = at(today, WORK_END); segs += `<div class="tl-work" style="left:${pc(ws)}%;width:${(pc(we) - pc(ws)).toFixed(2)}%"></div>`; }
+  list.forEach(r => {
+    const s = Math.max(r.start, A), e = Math.min(r.end ?? t, B); if (e <= s) return;
+    segs += `<div class="tl-seg ${r.end == null ? 'open' : ''}" style="left:${pc(s)}%;width:${(pc(e) - pc(s)).toFixed(2)}%" title="${esc(r.task)} ${hm(r.start)}–${r.end ? hm(r.end) : 'đang chạy'}"></div>`;
+  });
+  if (t >= A && t <= B) segs += `<div class="tl-now" style="left:${pc(t)}%" title="Bây giờ"></div>`;
+  let axis = ''; const step = (h1 - h0) > 12 ? 3 : 2;
+  for (let h = h0; h <= h1; h += step) axis += `<span style="left:${((h - h0) / (h1 - h0) * 100).toFixed(2)}%">${pad(h)}</span>`;
+  return `<div class="tl" role="img" aria-label="Các khoảng thời gian đã ghi hôm nay">${segs}</div><div class="tl-axis num">${axis}</div>
+    <div class="tl-legend"><span><i></i>Trong giờ ${WORK_START}–${WORK_END}</span><span>Khoảng trống = không chạy task</span></div>`;
+}
+
+/* màn hình Hôm nay */
+function dayOptions() {
+  const today = dayKey(now());
+  const set = new Set(records.filter(r => r.member === S.member).map(r => r.date)); set.add(today);
+  return [...set].sort().reverse();
+}
+function todayHtml() {
+  const today = dayKey(now()); const dk = S.viewDay || today; const list = recsOf(S.member, dk);
+  const tot = list.reduce((a, r) => { a.total += minutesOf(r).total; return a; }, { total: 0 });
+  const st = exportStatus(S.member, dk);
+  const stTag = { empty: '<span class="tag">Chưa có dữ liệu</span>', none: '<span class="tag warn">Chưa xuất file</span>', ok: `<span class="tag ok">Đã xuất lúc ${st.at ? hm(st.at) : ''}</span>`, stale: `<span class="tag danger">Đã sửa sau khi xuất – cần xuất lại</span>` }[st.state];
+  const rows = list.map(r => {
+    const m = minutesOf(r);
+    return `<tr>
+      <td><b>${esc(r.task)}</b><br><small class="muted" style="color:var(--muted)">${esc(r.dtms || '')}</small></td>
+      <td class="num">${hm(r.start)}</td>
+      <td class="num">${r.end == null ? '<span class="tag ok">đang chạy</span>' : fmtDT(r.end, r.date)}</td>
+      <td class="n num">${m.total}</td>
+      <td><select class="chk" data-edit="check" data-id="${r.id}" aria-label="Loại check"><option value="" ${!r.check ? 'selected' : ''}>—</option><option value="1" ${r.check === 1 ? 'selected' : ''}>Check 1</option><option value="2" ${r.check === 2 ? 'selected' : ''}>Check 2</option></select></td>
+      <td><input class="qty" type="number" min="0" step="1" inputmode="numeric" data-edit="qty" data-id="${r.id}" value="${esc(r.qty)}" aria-label="Số lượng"></td>
+      <td><input type="text" data-edit="note" data-id="${r.id}" value="${esc(r.note)}" aria-label="Ghi chú"></td>
+      <td><div class="flags">${r.doneAt ? `<span class="tag ok">Done C${r.check} ${hm(r.doneAt)}</span>` : ''}${r.paused && !r.doneAt ? '<span class="tag">Tạm dừng</span>' : ''}${r.unconfirmed ? '<span class="tag danger">Chưa xác nhận</span>' : ''}${r.edited ? '<span class="tag warn">Đã chỉnh sửa</span>' : ''}</div></td>
+      <td style="white-space:nowrap">${r.unconfirmed && r.end != null ? `<button class="btn" data-act="confirm" data-id="${r.id}">Xác nhận</button> ` : ''}<button class="btn" data-act="edit" data-id="${r.id}">Sửa</button></td>
+    </tr>`;
+  }).join('');
+  return `<div class="wrap">
+    <div class="today-head">
+      <select id="daysel" aria-label="Chọn ngày">${dayOptions().map(d => `<option value="${d}" ${d === dk ? 'selected' : ''}>${d === today ? 'Hôm nay – ' : ''}${fmtDay(d)}</option>`).join('')}</select>
+      <div class="stats num"><div class="stat"><b>${tot.total}</b><span>Tổng phút</span></div></div>
+      <div>${stTag}</div>
+    </div>
+    <div class="actions-row">
+      <button class="btn primary" data-act="export" ${list.length ? '' : 'disabled'}>Xuất Excel ngày này</button>
+      <button class="btn" data-act="add">+ Thêm bản ghi bị quên</button>
+      <button class="btn ghost" data-act="sp">Mở thư mục SharePoint</button>
+      <span style="flex:1"></span>
+      <button class="btn danger-ghost" data-act="delete">Xoá dữ liệu…</button>
+    </div>
+    ${list.length ? `<div class="tbl-wrap"><table><thead><tr><th>Task</th><th>Bắt đầu</th><th>Kết thúc</th><th>Phút</th><th>Check</th><th>Số lượng</th><th>Ghi chú</th><th>Trạng thái</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : '<div class="empty">Chưa có bản ghi nào trong ngày này. Nếu bạn quên bấm giờ, dùng "+ Thêm bản ghi bị quên".</div>'}
+    <p class="muted" style="color:var(--muted);font-size:13px;margin-top:10px">Sửa task hoặc giờ sẽ gắn cờ "Đã chỉnh sửa". Số lượng và ghi chú có thể nhập bất cứ lúc nào.</p>
+  </div>`;
+}
+
+/* form sửa / thêm bản ghi */
+function recordForm(r, isNew) {
+  const dk = r ? r.date : (S.viewDay || dayKey(now()));
+  const days = [addDays(dk, -1), dk, addDays(dk, 1)].filter(d => d <= dayKey(now()));
+  let sMs, eMs;
+  if (r) { sMs = r.start; eMs = r.end; }
+  else {
+    const prev = recsOf(S.member, dk).filter(x => x.end != null).pop();
+    sMs = prev ? prev.end : at(dk, WORK_START); eMs = Math.min(sMs + 30 * MIN, now());
+    if (eMs <= sMs) { sMs = now() - 30 * MIN; eMs = now(); }
+  }
+  const curKey = r ? r.key : '';
+  const opts = DEPTS.map(d => `<optgroup label="${esc(d)}">${TASK_LIST.filter(t => t.dept === d).map(t => `<option value="${t.i}" ${t.key === curKey ? 'selected' : ''}>${esc(t.name)}${t.dtms !== t.name ? ' — ' + esc(t.dtms) : ''}</option>`).join('')}</optgroup>`).join('');
+  const missing = r && !TASK_BY_KEY.has(r.key) ? `<option value="__keep" selected>${esc(r.task)} (không còn trong danh sách)</option>` : '';
+  const dSel = (f, v) => `<select data-f="${f}">${days.map(d => `<option value="${d}" ${d === dayKey(v) ? 'selected' : ''}>${fmtDay(d)}</option>`).join('')}</select>`;
+  const running = r && r.end == null;
+  const body = `<div class="form-grid">
+      <label class="field full">Lọc task<input type="search" data-f="tq" placeholder="Gõ để lọc danh sách…"></label>
+      <label class="field full">Task<select data-f="task">${isNew ? '<option value="">— Chọn task —</option>' : ''}${missing}${opts}</select></label>
+      <label class="field">Ngày bắt đầu${dSel('sd', sMs)}</label><label class="field">Giờ bắt đầu<input type="time" data-f="st" value="${hm(sMs)}"></label>
+      ${running ? '<p class="full muted" style="margin:0">Task đang chạy – giờ kết thúc sẽ ghi khi bạn dừng task.</p>' : `<label class="field">Ngày kết thúc${dSel('ed', eMs)}</label><label class="field">Giờ kết thúc<input type="time" data-f="et" value="${hm(eMs)}"></label>`}
+      <label class="field">Số lượng ticket<input type="number" min="0" step="1" data-f="qty" value="${esc(r ? r.qty : '')}"></label>
+      <label class="field">Ghi chú<input type="text" data-f="note" value="${esc(r ? r.note : '')}"></label>
+      <label class="field">Loại check<select data-f="check"><option value="">—</option><option value="1" ${r && r.check === 1 ? 'selected' : ''}>Check 1</option><option value="2" ${r && r.check === 2 ? 'selected' : ''}>Check 2</option></select></label>
+    </div><div class="err" data-f="err"></div>`;
+  const read = root => {
+    const g = f => root.querySelector(`[data-f=${f}]`); const err = g('err');
+    const tv = g('task').value; if (!tv) { err.textContent = 'Hãy chọn task.'; return null; }
+    const task = tv === '__keep' ? null : TASK_LIST[+tv];
+    const s = at(g('sd').value, g('st').value || '00:00');
+    const e = running ? null : at(g('ed').value, g('et').value || '00:00');
+    if (!g('st').value || (!running && !g('et').value)) { err.textContent = 'Hãy nhập đủ giờ.'; return null; }
+    if (!running && e <= s) { err.textContent = 'Giờ kết thúc phải sau giờ bắt đầu.'; return null; }
+    if ((e ?? s) > now() + 30000) { err.textContent = 'Không được nhập giờ trong tương lai.'; return null; }
+    const clash = records.find(x => x.member === S.member && (!r || x.id !== r.id) && s < (x.end ?? now()) && (e ?? now()) > x.start);
+    if (clash) { err.textContent = `Trùng giờ với "${trunc(clash.task, 30)}" (${hm(clash.start)}–${clash.end ? hm(clash.end) : 'đang chạy'}). Hãy chỉnh lại.`; return null; }
+    const q = g('qty').value.trim();
+    return { task, s, e, qty: q === '' ? '' : String(Math.max(0, Math.floor(+q) || 0)), note: g('note').value, check: g('check').value ? +g('check').value : null };
+  };
+  const actions = [];
+  actions.push({ label: 'Huỷ', cls: 'ghost' });
+  if (!isNew && !running) actions.push({ label: 'Xoá bản ghi', cls: 'danger-ghost', onClick: () => { setTimeout(() => confirmDeleteRecord(r), 0); } });
+  actions.push({ label: isNew ? 'Thêm bản ghi' : 'Lưu', cls: 'primary', onClick: root => {
+    const v = read(root); if (!v) return false;
+    if (isNew) {
+      const m = memberOf(S.member);
+      records.push({ id: uid(), member: S.member, memberName: m.name, date: dayKey(v.s), key: v.task.key, task: v.task.name, dtms: v.task.dtms, dept: v.task.dept, path: v.task.path,
+        start: v.s, end: v.e, qty: v.qty, note: v.note, check: v.check, unconfirmed: false, reason: '', edited: true, manual: true, createdAt: now() });
+      S.viewDay = dayKey(v.s);
+    } else {
+      const changed = (v.task && v.task.key !== r.key) || v.s !== r.start || (!running && v.e !== r.end);
+      if (v.task) Object.assign(r, { key: v.task.key, task: v.task.name, dtms: v.task.dtms, dept: v.task.dept, path: v.task.path });
+      r.start = v.s; r.date = dayKey(v.s); if (!running) r.end = v.e;
+      r.qty = v.qty; r.note = v.note; r.check = v.check; if (!r.check) delete r.doneAt;
+      if (changed) { r.edited = true; if (r.end != null) { r.unconfirmed = false; r.reason = ''; } }
+      r.updatedAt = now();
+    }
+    saveRecords(); warnIfExported(isNew ? dayKey(v.s) : r.date); render();
+  } });
+  openModal({ title: isNew ? 'Thêm bản ghi bị quên' : 'Sửa bản ghi', tone: 'run', body, actions, row: true,
+    onMount: root => {
+      const tq = root.querySelector('[data-f=tq]'), sel = root.querySelector('[data-f=task]');
+      tq.addEventListener('input', () => { const w = norm(tq.value).split(/\s+/).filter(Boolean); sel.querySelectorAll('option').forEach(o => { if (!o.value || o.value === '__keep') return; const t = TASK_LIST[+o.value]; o.hidden = !w.every(x => t.search.includes(x)); }); });
+    } });
+}
+function confirmDeleteRecord(r) {
+  openModal({ title: 'Xoá bản ghi này?', tone: 'danger', row: true,
+    body: `<div class="taskbox"><b>${esc(r.task)}</b><span>${fmtDay(r.date)} ${hm(r.start)}–${r.end ? hm(r.end) : ''}</span></div><p>Bản ghi sẽ bị xoá vĩnh viễn khỏi máy này.</p>`,
+    actions: [{ label: 'Huỷ', cls: 'ghost' }, { label: 'Xoá vĩnh viễn', cls: 'danger', onClick: () => { records = records.filter(x => x.id !== r.id); saveRecords(); warnIfExported(r.date); render(); toast('Đã xoá bản ghi'); } }] });
+}
+function warnIfExported(dk) { const st = exportStatus(S.member, dk); if (st.state === 'stale') toast('Ngày này đã xuất file trước đó – hãy xuất lại và upload file mới', 'warn'); }
+function deleteDataFlow() {
+  const dk = S.viewDay || dayKey(now());
+  const nDay = recsOf(S.member, dk).filter(r => r.end != null).length, nAll = records.filter(r => r.member === S.member && r.end != null).length;
+  openModal({ title: 'Xoá dữ liệu của bạn', tone: 'danger', row: true,
+    body: `<p>Chỉ xoá dữ liệu của <b>${esc(memberOf(S.member).name)}</b> trên máy này. Task đang chạy không bị xoá.</p>
+      <label class="choice"><input type="radio" name="dscope" value="day" checked> Ngày ${fmtDay(dk)} (${nDay} bản ghi)</label>
+      <label class="choice"><input type="radio" name="dscope" value="all"> Toàn bộ dữ liệu của tôi (${nAll} bản ghi)</label>
+      <p class="muted">Dữ liệu cũ hơn ${KEEP_DAYS} ngày được tự động xoá.</p>`,
+    actions: [{ label: 'Huỷ', cls: 'ghost' }, { label: 'Tiếp tục', cls: 'danger', onClick: root => {
+      const scope = root.querySelector('input[name=dscope]:checked').value; const n = scope === 'day' ? nDay : nAll;
+      if (!n) { toast('Không có bản ghi nào để xoá'); return; }
+      setTimeout(() => openModal({ title: `Xoá vĩnh viễn ${n} bản ghi?`, tone: 'danger', row: true,
+        body: `<p>Thao tác này không hoàn tác được. Nếu chưa upload file Excel lên SharePoint, dữ liệu sẽ mất hẳn.</p>`,
+        actions: [{ label: 'Huỷ', cls: 'ghost' }, { label: 'Xoá vĩnh viễn', cls: 'danger', onClick: () => {
+          records = records.filter(r => !(r.member === S.member && r.end != null && (scope === 'all' || r.date === dk)));
+          saveRecords(); render(); toast(`Đã xoá ${n} bản ghi`);
+        } }] }), 0);
+    } }] });
+}
+
+/* cập nhật phần động mỗi giây */
+function updateTitle(t) {
+  let title;
+  if (!S.member) title = 'Bấm giờ task – chọn tên';
+  else {
+    const m = memberOf(S.member).short; const r = runningRec();
+    const rt = r ? null : resumeTarget();
+    title = r ? `▶ ${m} | ${trunc(r.dtms || r.task, 18)} ${dur(t - r.start + (r.carry || 0))}`
+      : rt ? `⏸ ${m} | ${trunc(rt.dtms || rt.task, 18)} ${dur(pausedTotal(rt))} | Tạm dừng` : `⏸ ${m} | Chưa chạy task`;
+  }
+  if (S.prompt) { S.flip = !S.flip; if (S.flip) title = '⚠ Kiểm tra task! ' + title; }
+  if (document.title !== title) document.title = title;
+}
+function bannersHtml(t) {
+  if (!S.member) return '';
+  const out = []; const r = runningRec(); const today = dayKey(t);
+  if (r && r.unconfirmed) out.push(`<div class="banner danger"><p>Task đang chạy đã qua 00:00. Khi dừng, bạn sẽ cần nhập giờ kết thúc thực tế.</p></div>`);
+  if (!r && inWork(t) && S.idleSince && t - S.idleSince >= IDLE_REMIND_MINUTES * MIN)
+    out.push(`<div class="banner info"><p>Bạn không chạy task nào trong ${Math.floor((t - S.idleSince) / MIN)} phút. Nếu đang làm việc, hãy bấm vào task.</p></div>`);
+  if (t >= at(today, REMIND_EXPORT)) {
+    const st = exportStatus(S.member, today);
+    if (st.state === 'stale') out.push(`<div class="banner danger"><p>Dữ liệu hôm nay đã thay đổi sau lần xuất lúc ${hm(st.at)}. Hãy xuất lại và upload file mới lên SharePoint.</p><button class="btn" data-act="exporttoday">Xuất lại Excel</button></div>`);
+  }
+  return out.join('');
+}
+function updateLive(t) {
+  document.querySelectorAll('[data-live=clock]').forEach(e => { const v = hm(t); if (e.textContent !== v) e.textContent = v; });
+  const r = S.member ? runningRec() : null;
+  if (r) {
+    const el = t - r.start + (r.carry || 0); const s = Math.floor(el / 1000) % 60;
+    const ee = document.querySelector('[data-live=elapsed]'); if (ee) ee.innerHTML = `${dur(el)}<small>:${pad(s)}</small>`;
+    document.querySelectorAll('[data-live=el]').forEach(e => e.textContent = dur(el));
+    const nx = document.querySelector('[data-live=next]');
+    if (nx) { const due = r.nextCheckAt; nx.textContent = due ? `Hỏi lại lúc ${hm(due)}` : ''; }
+  }
+  const b = $('#banners'); if (b) { const h = bannersHtml(t); if (h !== S.lastBanners) { S.lastBanners = h; b.innerHTML = h; } }
+  const tl = document.querySelector('[data-live=timeline]'); if (tl && (t - S.lastTL > 20000 || !tl.innerHTML)) { S.lastTL = t; tl.innerHTML = timelineHtml(); }
+  updateTitle(t);
+}
+
+/* ---------- Vòng lặp mỗi giây ---------- */
+function tick() {
+  if (S.blocked) return;
+  const t = now();
+  // Tool bị gián đoạn khi đang mở (máy ngủ, tab bị trình duyệt cho "ngủ"): KHÔNG dừng task, chỉ hỏi member
+  if (S.lastHB && t - S.lastHB > SLEEP_GAP_MINUTES * MIN) {
+    const last = S.lastHB; writeHB(t);
+    const r = S.member ? runningRec() : null;
+    if (r) { if (S.prompt) closeModal(S.prompt); showGapPrompt(r, last, t); }
+  }
+  if (!S.lastHB || t - S.lastHB >= HEARTBEAT_SECONDS * 1000) writeHB(t);
+  const dk = dayKey(t);
+  if (dk !== S.lastDay) { const first = !S.lastDay; S.lastDay = dk; if (!first) { flagMidnight(); render(); } }
+  checkPrompts(t);
+  if (S.prompt && t - S.promptSoundAt >= PROMPT_RESOUND_MINUTES * MIN) { S.promptSoundAt = t; chime(); }
+  updateLive(t);
+}
+
+/* ---------- Sự kiện ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-member],[data-start],[data-fav],[data-nav],[data-act],[data-dept]');
+  if (!el || S.blocked || !$('#app').contains(el)) return;
+  unlockAudio();
+  if (el.dataset.member) return selectMember(el.dataset.member);
+  if (el.dataset.start != null) { const t = TASK_LIST[+el.dataset.start]; if (t) startTask(t.key); return; }
+  if (el.dataset.fav != null) { const t = TASK_LIST[+el.dataset.fav]; if (t) { toggleFav(t.key); const y = $('#tlist').scrollTop; render(); $('#tlist').scrollTop = y; } return; }
+  if (el.dataset.dept) { S.dept = el.dataset.dept; document.querySelectorAll('[data-dept]').forEach(c => c.setAttribute('aria-pressed', c.dataset.dept === S.dept)); renderTaskList(); return; }
+  if (el.dataset.nav) { S.screen = el.dataset.nav; render(); return; }
+  const a = el.dataset.act; const id = el.dataset.id;
+  if (a === 'pause') pauseTask();
+  else if (a === 'resume') resumeTask();
+  else if (a === 'done1') doneCheck(1);
+  else if (a === 'done2') doneCheck(2);
+  else if (a === 'endday') endDay();
+  else if (a === 'switch') switchPerson();
+  else if (a === 'export') exportDay(S.viewDay || dayKey(now()));
+  else if (a === 'exporttoday') exportDay(dayKey(now()));
+  else if (a === 'sp') openSP();
+  else if (a === 'add') recordForm(null, true);
+  else if (a === 'edit') { const r = records.find(x => x.id === id); if (r) recordForm(r, false); }
+  else if (a === 'confirm') { const r = records.find(x => x.id === id); if (r) pickEndTime({ rec: r, allowKeep: true, tone: 'warn', title: 'Xác nhận giờ kết thúc', intro: REASON[r.reason] || '', defaultMs: r.end,
+      onDone: (ms, kept) => { if (!kept) { if (Math.abs(ms - r.end) >= MIN) r.edited = true; r.end = ms; } r.unconfirmed = false; r.reason = ''; saveRecords(); warnIfExported(r.date); render(); } }); }
+  else if (a === 'delete') deleteDataFlow();
+  else if (a === 'upd-config') withPin(openConfigAdmin);
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'taskq') { S.query = t.value; renderTaskList(); return; }
+  if (t.dataset && t.dataset.edit) {
+    const r = records.find(x => x.id === t.dataset.id); if (!r) return;
+    if (t.dataset.edit === 'qty') {
+      const v = t.value.trim(); r.qty = v === '' ? '' : String(Math.max(0, Math.floor(+v) || 0));
+      if (r.qty !== '') { t.classList.remove('need'); const msg = t.closest('.fields') && t.closest('.fields').querySelector('.need-msg'); if (msg) msg.remove(); }
+    }
+    else if (t.dataset.edit === 'check') { r.check = t.value ? +t.value : null; if (!r.check) delete r.doneAt; }
+    else r.note = t.value;
+    r.updatedAt = now(); saveRecords();
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'daysel') { S.viewDay = t.value; render(); }
+  if (t.dataset && t.dataset.edit) { const r = records.find(x => x.id === t.dataset.id); if (r) warnIfExported(r.date); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('#tlist') && document.activeElement && document.activeElement.id === 'taskq' && S.query) { S.query = ''; document.activeElement.value = ''; renderTaskList(); }
+});
+window.addEventListener('pagehide', () => {
+  if (S.blocked) return;
+  writeHB(now());
+  if (store.mode === 'local') { const l = store.get('lock', null); if (l && l.id === TAB_ID) store.del('lock'); }
+});
+document.addEventListener('visibilitychange', () => { if (!S.blocked) { if (document.visibilityState === 'hidden') writeHB(now()); else tick(); } });
+
+/* ---------- Khởi động ---------- */
+function boot(force) {
+  store.del('testOffset'); // dọn giờ ảo còn sót từ bản cũ
+  loadRecords(); buildCatalog();
+  if (!acquireLock(force)) { showBlocked(false); return; }
+  S.blocked = false;
+  purgeOld();
+  recoverOnOpen();
+  S.lastDay = dayKey(now()); writeHB(now());
+  S.member = null; S.screen = 'names';
+  render();
+}
+setInterval(tick, 1000);
+setInterval(() => {
+  if (store.mode !== 'local' || S.blocked) return;
+  const l = store.get('lock', null);
+  if (l && l.id !== TAB_ID) { showBlocked(true); return; }
+  store.set('lock', { id: TAB_ID, at: Date.now() });
+}, 4000);
+boot();
+</script>
+</body>
+</html>
